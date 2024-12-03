@@ -96,6 +96,9 @@
         },
         "care_plus_subscription": {
           "name": "Care+ subscription"
+        },
+        "pump_status": {
+          "name": "Pump flow"
         }
       },
       "button": {

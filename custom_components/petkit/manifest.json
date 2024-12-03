@@ -5,7 +5,6 @@
     "@Jezza34000"
   ],
   "config_flow": true,
-  "dependencies": [],
   "documentation": "https://github.com/Jezza34000/home-assistant-petkit/blob/main/README.md",
   "integration_type": "hub",
   "iot_class": "cloud_polling",
@@ -14,7 +13,7 @@
     "petkit_api"
   ],
   "requirements": [
-    "petkit-api==0.1.4",
+    "petkit-api==0.1.5",
     "tzlocal==5.1"
   ],
   "version": "1.0.0"

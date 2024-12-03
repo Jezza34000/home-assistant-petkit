@@ -66,6 +66,12 @@ async def async_setup_entry(
             WFPurifiedWater(coordinator, wf_id),
         ))
 
+        if wf_data.type == 'ctw3':
+            sensors.append(
+                EversweetBattery(coordinator, wf_id)
+            )
+
+
     for feeder_id, feeder_data in coordinator.data.feeders.items():
         # All Feeders
         sensors.extend((
@@ -4494,3 +4500,77 @@ class FeederRawPlanData(CoordinatorEntity, SensorEntity):
     def icon(self) -> str | None:
         """Set icon for the last dispensed food."""
         return 'mdi:calendar-month'
+
+
+class EversweetBattery(CoordinatorEntity, SensorEntity):
+    """Representation of Pura Air battery level."""
+
+    def __init__(self, coordinator, wf_id):
+        super().__init__(coordinator)
+        self.wf_id = wf_id
+
+    @property
+    def wf_data(self) -> Fountain:
+        """Handle coordinator Water Fountain data"""
+
+        return self.coordinator.data.water_fountains[self.wf_id]
+
+    @property
+    def device_info(self) -> dict[str, Any]:
+        """Return device registry information for this entity."""
+
+        return {
+            "identifiers": {(DOMAIN, self.wf_data.id)},
+            "name": self.wf_data.data['name'],
+            "manufacturer": "PetKit",
+            "model": WATER_FOUNTAINS.get(self.wf_data.data["typeCode"], "Unidentified Water Fountain") if "typeCode" in self.wf_data.data else "Unidentified Water Fountain",
+            "sw_version": f'{self.wf_data.data["hardware"]}.{self.wf_data.data["firmware"]}'
+        }
+
+    @property
+    def unique_id(self) -> str:
+        """Sets unique ID for this entity."""
+
+        return str(self.wf_data.id) + '_fountain_battery'
+
+    @property
+    def has_entity_name(self) -> bool:
+        """Indicate that entity has name defined."""
+
+        return True
+
+    @property
+    def translation_key(self) -> str:
+        """Translation key for this entity."""
+
+        return "fountain_battery"
+
+    @property
+    def native_value(self) -> int:
+        """Return current battery percentage."""
+
+        return self.wf_data.data['electricity']['batteryPercent']
+
+    @property
+    def native_unit_of_measurement(self) -> str:
+        """Return % as the native unit."""
+
+        return PERCENTAGE
+
+    @property
+    def device_class(self) -> SensorDeviceClass:
+        """ Return entity device class """
+
+        return SensorDeviceClass.BATTERY
+
+    @property
+    def entity_category(self) -> EntityCategory:
+        """Set category to diagnostic."""
+
+        return EntityCategory.DIAGNOSTIC
+
+    @property
+    def state_class(self) -> SensorStateClass:
+        """Return the type of state class."""
+
+        return SensorStateClass.MEASUREMENT

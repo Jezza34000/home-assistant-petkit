@@ -1,0 +1,821 @@
+{
+    "config": {
+        "abort": {
+            "reauth_successful": "La reautenticació ha estat correcta",
+            "already_configured": "El compte PetKit ja està configurat"
+        },
+        "error": {
+            "cannot_connect": "No s'ha pogut connectar",
+            "no_devices": "No s'ha trobat cap dispositiu",
+            "invalid_auth": "Autenticació invàlida. Les vostres credencials són correctes?",
+            "server_busy": "Els servidors de PetKit estan enfeinats. Torneu-ho a provar més tard.",
+            "petkit_error": "S'ha trobat un error desconegut. Per a més detalls, vegeu els registres del Home Assistant.",
+            "region_error": "Seleccioneu el país associat al vostre compte.",
+            "timezone_error": "No s'ha pogut trobar una zona horària. Si esteu executant Home Assistant com un contenidor Docker independent, heu de definir la variable ambiental TZ. Si la variable TZ està definida o esteu executant Home Assistant OS, no s'ha trobat la zona horària a la biblioteca tzlocal - Seleccioneu manualment una zona horària durant la configuració."
+        },
+        "step": {
+            "user": {
+                "data": {
+                    "email": "Correu electrònic del compte de PetKit",
+                    "password": "Contrasenya del compte PetKit",
+                    "region": "Seleccioneu el país associat al vostre compte",
+                    "timezone": "Seleccioneu manualment una zona horària o intenteu establir-la automàticament",
+                    "polling_interval": "Interval d'actualització (segons)"
+                },
+                "title": "Empleneu les vostres credencials PetKit"
+            },
+            "reauth_confirm": {
+                "data": {
+                    "email": "Correu electrònic del compte de PetKit",
+                    "password": "Contrasenya del compte PetKit",
+                    "region": "Seleccioneu el país associat al vostre compte",
+                    "timezone": "Seleccioneu manualment una zona horària o intenteu establir-la automàticament",
+                    "polling_interval": "Interval d'actualització (segons)"
+                },
+                "title": "Reautentiqueu amb les vostres credencials PetKit"
+            }
+        }
+    },
+    "options": {
+        "step": {
+            "petkit_options": {
+                "data": {
+                    "region": "Seleccioneu el país associat al vostre compte",
+                    "timezone": "Seleccioneu manualment una zona horària o intenteu establir-la automàticament",
+                    "polling_interval": "Interval d'actualització (segons)"
+                }
+            }
+        }
+    },
+    "entity": {
+        "binary_sensor": {
+            "camera_status": {
+                "name": "Estat de la cambra"
+            },
+            "eating": {
+                "name": "Menjant"
+            },
+            "feeding": {
+                "name": "Alimentant"
+            },
+            "water_level": {
+                "name": "Nivell d'aigua"
+            },
+            "food_level": {
+                "name": "Nivell d'aliments"
+            },
+            "battery_installed": {
+                "name": "Bateria instal·lada"
+            },
+            "battery": {
+                "name": "Bateria"
+            },
+            "wastebin": {
+                "name": "S'ha omplert la safata"
+            },
+            "litter": {
+                "name": "Sorra"
+            },
+            "deodorizer": {
+                "name": "Desodorant"
+            },
+            "manually_paused": {
+                "name": "En pausa manual"
+            },
+            "pura_air_liquid": {
+                "name": "Líquid Pura Air"
+            },
+            "food_level_hopper_one": {
+                "name": "Nivell d'aliment a la tremuja 1"
+            },
+            "food_level_hopper_two": {
+                "name": "Nivell d'aliment a la tremuja 2"
+            },
+            "waste_bin_presence": {
+                "name": "Presència de la safata"
+            },
+            "care_plus_subscription": {
+                "name": "Subscripció Care+"
+            }
+        },
+        "sensor": {
+            "latest_weight": {
+                "name": "Últim pes"
+            },
+            "max_last_event": {
+                "state": {
+                    "light_on": "El llum és encès",
+                    "no_events_yet": "Encara no hi ha esdeveniments",
+                    "event_type_unknown": "Tipus d'esdeveniment desconegut",
+                    "cleaning_completed": "S'ha completat la neteja",
+                    "dumping_over": "Bolcat complet",
+                    "reset_over": "Reinici complet",
+                    "spray_over": "Ruixat complet",
+                    "light_over": "Llum al màxim",
+                    "pet_out": "Animal de companyia a fora",
+                    "auto_cleaning_completed": "S'ha completat la neteja automàtica",
+                    "periodic_cleaning_completed": "Neteja periòdica completada",
+                    "manual_cleaning_completed": "S'ha completat la neteja manual",
+                    "auto_cleaning_terminated": "S'ha aturat la neteja automàtica",
+                    "periodic_cleaning_terminated": "Neteja periòdica aturada",
+                    "manual_cleaning_terminated": "S'ha aturat la neteja manual",
+                    "auto_cleaning_failed_full": "Ha fallat la neteja automàtica, la safata de recollida de residus és plena, si us plau, buideu-la aviat",
+                    "auto_cleaning_failed_hall_t": "Error de neteja automàtica, la tapa superior de la caixa de sorra no està ben col·locada, si us plau, comproveu-ho",
+                    "auto_cleaning_failed_falldown": "Error de neteja automàtica, la caixa de sorra trontolla, si us plau, comproveu-ho.",
+                    "auto_cleaning_failed_other": "Ha fallat la neteja automàtica, mal funcionament del dispositiu, si us plau, comproveu-ho.",
+                    "scheduled_cleaning_failed_full": "Ha fallat la neteja programada, la safata de recollida de residus és plena, si us plau, buideu-la aviat",
+                    "scheduled_cleaning_failed_hall_t": "Error de neteja programada, la tapa superior de la caixa de sorra no està ben posada, si us plau, comproveu-ho",
+                    "scheduled_cleaning_failed_falldown": "Error de neteja programada, la caixa de sorra trontolla, si us plau, comproveu-ho.",
+                    "scheduled_cleaning_failed_other": "Error de neteja programada, mal funcionament del dispositiu, si us plau, comproveu-ho.",
+                    "manual_cleaning_failed_full": "Ha fallat la neteja manual, la safata de recollida de residus és plena, si us plau, buideu-la prest",
+                    "manual_cleaning_failed_hall_t": "Error de neteja manual, la tapa superior de la safata de sorra no està ben posada, si us plau, comproveu-ho",
+                    "manual_cleaning_failed_falldown": "Error de neteja manual, la caixa de sorra trontolla, si us plau, comproveu-ho.",
+                    "manual_cleaning_failed_other": "Error de neteja manual, mal funcionament del dispositiu, si us plau, comproveu-ho.",
+                    "auto_cleaning_canceled": "S'ha cancel·lat la neteja automàtica, dispositiu en funcionament",
+                    "periodic_cleaning_canceled": "Neteja periòdica cancel·lada, aparell funcionant",
+                    "manual_cleaning_canceled": "Neteja manual cancel·lada, dispositiu funcionant",
+                    "auto_cleaning_failed_maintenance": "Ha fallat la neteja automàtica, el dispositiu està en mode de manteniment",
+                    "periodic_cleaning_failed_maintenance": "Ha fallat la neteja periòdica, el dispositiu està en mode de manteniment",
+                    "auto_cleaning_canceled_kitten": "El mode Kitten està activat, s'ha cancel·lat la neteja automàtica",
+                    "periodic_cleaning_canceled_kitten": "El mode Kitten està activat, s'ha cancel·lat la neteja periòdica",
+                    "litter_empty_completed": "Buidatge de la sorra del gat finit",
+                    "litter_empty_terminated": "Buidatge de la sorra del gat aturat",
+                    "litter_empty_failed_full": "Ha fallat el buidatge de la sorra del gat, la safata de recollida de residus és plena, si us plau, buideu-la prest",
+                    "litter_empty_failed_hall_t": "Ha fallat el buidatge de la sorra del gat, la tapa de la capsa de la sorra no està ben posada, si us plau, comproveu-ho",
+                    "litter_empty_failed_falldown": "Ha fallat el buidatge de la sorra del gat, la safata trontolla, si us plau, comproveu-ho",
+                    "litter_empty_failed_other": "Ha fallat el buidatge de la sorra del gat, mal funcionament del dispositiu, si us plau, comproveu-ho.",
+                    "reset_completed": "S'ha completat el reinici del dispositiu",
+                    "reset_terminated": "S'ha aturat el reinici del dispositiu",
+                    "reset_failed_full": "Ha fallat el restabliment del dispositiu, la safata de recollida de residus és plena, si us plau, buideu-la aviat",
+                    "reset_failed_hall_t": "Ha fallat el restabliment del dispositiu, la tapa de la caixa de sorra no està ben posada, si us plau, comproveu-ho",
+                    "reset_failed_falldown": "Ha fallat el restabliment del dispositiu, la caixa de sorra trontolla, si us plau, comproveu-ho.",
+                    "reset_failed_other": "Error de restabliment del dispositiu, mal funcionament del dispositiu, si us plau, comproveu-ho.",
+                    "maintenance_mode": "Mode de manteniment",
+                    "deodorant_finished": "Desodorant acabat",
+                    "periodic_odor_completed": "S'ha completat l'eliminació periòdica de la pudor",
+                    "manual_odor_completed": "S'ha completat l'eliminació manual de la pudor",
+                    "auto_odor_terminated": "S'ha aturat l'eliminació automàtica de la pudor.",
+                    "periodic_odor_terminated": "S'ha aturat l'eliminació periòdica de la pudor.",
+                    "manual_odor_terminated": "S'ha aturat l'eliminació manual de la pudor.",
+                    "auto_odor_failed": "Ha fallat l'eliminació automàtica la pudor, error en eliminar la pudor",
+                    "periodic_odor_failed": "Error en l'eliminació periòdica de pudors, mal funcionament de l'eliminació de pudors",
+                    "manual_odor_failed": "Error en l'eliminació manual de pudors, mal funcionament de l'eliminació de pudors",
+                    "auto_odor_canceled": "S'ha cancel·lat l'eliminació automàtica de pudors, el dispositiu està funcionant.",
+                    "periodic_odor_canceled": "S'ha cancel·lat l'eliminació periòdica de pudors. La caixa de sorra està funcionant.",
+                    "manual_odor_canceled": "S'ha cancel·lat l'eliminació manual de la pudor. La caixa de sorra està funcionant.",
+                    "auto_odor_failed_device": "Ha fallat l'eliminació automàtica de pudors, no hi ha cap esprai desodorant connectat.",
+                    "periodic_odor_failed_device": "Ha fallat l'eliminació periòdica de pudors. El dispositiu d'eliminació de pudors està desconnectat.",
+                    "manual_odor_failed_device": "Ha fallat l'eliminació manual de pudors. El dispositiu d'eliminació de pudors està desconnectat.",
+                    "auto_odor_failed_batt": "Ha fallat l'eliminació automàtica de pudors, si us plau, confirmeu que hi ha prou bateria de l'esprai desodorant.",
+                    "periodic_odor_failed_batt": "Ha fallat l'eliminació periòdica de la pudor. Si us plau, assegureu-vos que hi ha prou bateria del dispositiu d'eliminació de pudors.",
+                    "manual_odor_failed_batt": "Ha fallat l'eliminació manual de la pudor. Si us plau, assegureu-vos que el dispositiu d'eliminació de pudors tingui prou bateria.",
+                    "auto_odor_failed_low_batt": "Ha fallat l'eliminació automàtica de pudors, la bateria és baixa.",
+                    "periodic_odor_failed_low_batt": "Ha fallat l'eliminació periòdica de pudors. La bateria del dispositiu d'eliminació de pudors està massa baixa.",
+                    "manual_odor_failed_low_batt": "Ha fallat l'eliminació manual de pudors. La bateria del dispositiu d'eliminació de pudors està massa baixa.",
+                    "cat_stopped_odor": "El vostre gat està fent servir la caixa de sorra, s'ha cancel·lat la desodorització",
+                    "light_already_on": "El llum és encès. No cal tornar a engegar-lo.",
+                    "light_malfunc": "No s'encén el llum. El dispositiu no funciona bé. Comproveu-ho.",
+                    "light_no_device": "No s'encén el llum. Si us plau, vinculeu primer el dispositiu d'eliminació de pudors.",
+                    "light_batt_cap": "No s'encén el llum. Comproveu la capacitat de la bateria del dispositiu d'eliminació de pudors.",
+                    "light_low_batt": "No s'encén el llum. Baixa capacitat de bateria del dispositiu d'eliminació de pudors."
+                },
+                "state_attributes": {
+                    "sub_events": {
+                        "state": {
+                            "maintenance_mode": "Mode de manteniment",
+                            "auto_odor_failed": "Ha fallat l'eliminació automàtica la pudor, error en eliminar la pudor",
+                            "periodic_odor_failed": "Error en l'eliminació periòdica de pudors, mal funcionament de l'eliminació de pudors",
+                            "no_events_yet": "Encara no hi ha esdeveniments",
+                            "event_type_unknown": "Esdeveniment de tipus desconegut",
+                            "cleaning_completed": "S'ha completat la neteja",
+                            "dumping_over": "Bolcat complet",
+                            "reset_over": "Reinici complet",
+                            "spray_over": "Ruixat complet",
+                            "light_over": "Llum al màxim",
+                            "pet_out": "Animal de companyia a fora",
+                            "auto_cleaning_completed": "S'ha completat la neteja automàtica",
+                            "periodic_cleaning_completed": "Neteja periòdica completada",
+                            "manual_cleaning_completed": "S'ha completat la neteja manual",
+                            "auto_cleaning_terminated": "S'ha aturat la neteja automàtica",
+                            "periodic_cleaning_terminated": "Neteja periòdica aturada",
+                            "manual_cleaning_terminated": "S'ha aturat la neteja manual",
+                            "auto_cleaning_failed_full": "Ha fallat la neteja automàtica, la safata de recollida de residus és plena, si us plau, buideu-la aviat",
+                            "auto_cleaning_failed_hall_t": "Error de neteja automàtica, la tapa superior de la caixa de sorra no està ben col·locada, si us plau, comproveu-ho",
+                            "auto_cleaning_failed_falldown": "Error de neteja automàtica, la caixa de sorra trontolla, si us plau, comproveu-ho.",
+                            "auto_cleaning_failed_other": "Ha fallat la neteja automàtica, mal funcionament del dispositiu, si us plau, comproveu-ho.",
+                            "scheduled_cleaning_failed_full": "Ha fallat la neteja programada, la safata de recollida de residus és plena, si us plau, buideu-la aviat",
+                            "scheduled_cleaning_failed_hall_t": "Error de neteja programada, la tapa superior de la caixa de sorra no està ben posada, si us plau, comproveu-ho",
+                            "scheduled_cleaning_failed_falldown": "Error de neteja programada, la caixa de sorra trontolla, si us plau, comproveu-ho.",
+                            "scheduled_cleaning_failed_other": "Error de neteja programada, mal funcionament del dispositiu, si us plau, comproveu-ho.",
+                            "manual_cleaning_failed_full": "Ha fallat la neteja manual, la safata de recollida de residus és plena, si us plau, buideu-la prest",
+                            "manual_cleaning_failed_hall_t": "Error de neteja manual, la tapa superior de la safata de sorra no està ben posada, si us plau, comproveu-ho",
+                            "manual_cleaning_failed_falldown": "Error de neteja manual, la caixa de sorra trontolla, si us plau, comproveu-ho.",
+                            "manual_cleaning_failed_other": "Error de neteja manual, mal funcionament del dispositiu, si us plau, comproveu-ho.",
+                            "auto_cleaning_canceled": "S'ha cancel·lat la neteja automàtica, dispositiu en funcionament",
+                            "periodic_cleaning_canceled": "Neteja periòdica cancel·lada, aparell funcionant",
+                            "manual_cleaning_canceled": "Neteja manual cancel·lada, dispositiu funcionant",
+                            "auto_cleaning_failed_maintenance": "Ha fallat la neteja automàtica, el dispositiu està en mode de manteniment",
+                            "periodic_cleaning_failed_maintenance": "Ha fallat la neteja periòdica, el dispositiu està en mode de manteniment",
+                            "auto_cleaning_canceled_kitten": "El mode Kitten està activat, s'ha cancel·lat la neteja automàtica",
+                            "periodic_cleaning_canceled_kitten": "El mode Kitten està activat, s'ha cancel·lat la neteja periòdica",
+                            "litter_empty_completed": "Buidatge de la sorra del gat finit",
+                            "litter_empty_terminated": "Buidatge de la sorra del gat aturat",
+                            "litter_empty_failed_full": "Ha fallat el buidatge de la sorra del gat, la safata de recollida de residus és plena, si us plau, buideu-la prest",
+                            "litter_empty_failed_hall_t": "Ha fallat el buidatge de la sorra del gat, la tapa de la capsa de la sorra no està ben posada, si us plau, comproveu-ho",
+                            "litter_empty_failed_falldown": "Ha fallat el buidatge de la sorra del gat, la safata trontolla, si us plau, comproveu-ho",
+                            "litter_empty_failed_other": "Ha fallat el buidatge de la sorra del gat, mal funcionament del dispositiu, si us plau, comproveu-ho.",
+                            "reset_completed": "S'ha completat el reinici del dispositiu",
+                            "reset_terminated": "S'ha aturat el reinici del dispositiu",
+                            "reset_failed_full": "Ha fallat el restabliment del dispositiu, la safata de recollida de residus és plena, si us plau, buideu-la aviat",
+                            "reset_failed_hall_t": "Ha fallat el restabliment del dispositiu, la tapa de la caixa de sorra no està ben posada, si us plau, comproveu-ho",
+                            "reset_failed_falldown": "Ha fallat el restabliment del dispositiu, la caixa de sorra trontolla, si us plau, comproveu-ho.",
+                            "reset_failed_other": "Error de restabliment del dispositiu, mal funcionament del dispositiu, si us plau, comproveu-ho.",
+                            "deodorant_finished": "Desodorant acabat",
+                            "periodic_odor_completed": "S'ha completat l'eliminació periòdica de la pudor",
+                            "manual_odor_completed": "S'ha completat l'eliminació manual de la pudor",
+                            "auto_odor_terminated": "S'ha aturat l'eliminació automàtica de la pudor.",
+                            "periodic_odor_terminated": "S'ha aturat l'eliminació periòdica de la pudor.",
+                            "manual_odor_terminated": "S'ha aturat l'eliminació manual de la pudor.",
+                            "manual_odor_failed": "Error en l'eliminació manual de pudors, mal funcionament de l'eliminació de pudors",
+                            "auto_odor_canceled": "S'ha cancel·lat l'eliminació automàtica de pudors, el dispositiu està funcionant.",
+                            "periodic_odor_canceled": "S'ha cancel·lat l'eliminació periòdica de pudors. La caixa de sorra està funcionant.",
+                            "manual_odor_canceled": "S'ha cancel·lat l'eliminació manual de la pudor. La caixa de sorra està funcionant.",
+                            "auto_odor_failed_device": "Ha fallat l'eliminació automàtica de pudors, no hi ha cap esprai desodorant connectat.",
+                            "periodic_odor_failed_device": "Ha fallat l'eliminació periòdica de pudors. El dispositiu d'eliminació de pudors està desconnectat.",
+                            "manual_odor_failed_device": "Ha fallat l'eliminació manual de pudors. El dispositiu d'eliminació de pudors està desconnectat.",
+                            "auto_odor_failed_batt": "Ha fallat l'eliminació automàtica de pudors, si us plau, confirmeu que hi ha prou bateria de l'esprai desodorant.",
+                            "periodic_odor_failed_batt": "Ha fallat l'eliminació periòdica de la pudor. Si us plau, assegureu-vos que hi ha prou bateria del dispositiu d'eliminació de pudors.",
+                            "manual_odor_failed_batt": "Ha fallat l'eliminació manual de la pudor. Si us plau, assegureu-vos que el dispositiu d'eliminació de pudors tingui prou bateria.",
+                            "auto_odor_failed_low_batt": "Ha fallat l'eliminació automàtica de pudors, la bateria és baixa.",
+                            "periodic_odor_failed_low_batt": "Ha fallat l'eliminació periòdica de pudors. La bateria del dispositiu d'eliminació de pudors està massa baixa.",
+                            "manual_odor_failed_low_batt": "Ha fallat l'eliminació manual de pudors. La bateria del dispositiu d'eliminació de pudors està massa baixa.",
+                            "cat_stopped_odor": "El vostre gat està fent servir la caixa de sorra, s'ha cancel·lat la desodorització",
+                            "light_on": "El llum és encès",
+                            "light_already_on": "El llum és encès. No cal tornar a engegar-lo.",
+                            "light_malfunc": "No s'encén el llum. El dispositiu no funciona bé. Comproveu-ho.",
+                            "light_no_device": "No s'encén el llum. Si us plau, vinculeu primer el dispositiu d'eliminació de pudors.",
+                            "light_batt_cap": "No s'encén el llum. Comproveu la capacitat de la bateria del dispositiu d'eliminació de pudors.",
+                            "light_low_batt": "No s'encén el llum. Baixa capacitat de bateria del dispositiu d'eliminació de pudors.",
+                            "no_sub_events": "No hi ha sub-esdeveniments associats"
+                        }
+                    }
+                },
+                "name": "Últim esdeveniment"
+            },
+            "bowl": {
+                "name": "Bol"
+            },
+            "energy_usage": {
+                "name": "Ús d'energia"
+            },
+            "last_data_update": {
+                "name": "Data d'actualització"
+            },
+            "filter": {
+                "name": "Vida del filtre"
+            },
+            "purified_water_today": {
+                "name": "Aigua purificada avui"
+            },
+            "device_status": {
+                "name": "Estat",
+                "state": {
+                    "offline": "Fora de línia",
+                    "normal": "Normal",
+                    "on_batteries": "A les bateries"
+                }
+            },
+            "desiccant_days_remaining": {
+                "name": "Romanent de dies del dessecant"
+            },
+            "battery_status": {
+                "name": "Estat de la bateria",
+                "state": {
+                    "normal": "Normal",
+                    "low": "Baixa"
+                }
+            },
+            "dispensed": {
+                "name": "Peixat"
+            },
+            "planned": {
+                "name": "Planificat"
+            },
+            "planned_dispensed": {
+                "name": "Peixat planificat"
+            },
+            "manually_dispensed": {
+                "name": "Peixat manualment"
+            },
+            "times_dispensed": {
+                "name": "Vegades peixat"
+            },
+            "rssi": {
+                "name": "RSSI"
+            },
+            "amount_eaten": {
+                "name": "Quantitat ingerida"
+            },
+            "times_eaten": {
+                "name": "Vegades àpats"
+            },
+            "food_in_bowl": {
+                "name": "Menjar al bol"
+            },
+            "error": {
+                "name": "Error",
+                "state": {
+                    "no_error": "No hi ha cap error"
+                }
+            },
+            "deodorizer_level": {
+                "name": "Nivell del desodorant"
+            },
+            "litter_level": {
+                "name": "Nivell de la sorra"
+            },
+            "litter_weight": {
+                "name": "Pes de la sorra"
+            },
+            "times_used": {
+                "name": "Vegades emprat"
+            },
+            "average_use": {
+                "name": "Ús mitjà"
+            },
+            "total_use": {
+                "name": "Ús total"
+            },
+            "last_used_by": {
+                "name": "Fet servir per darrera vegada",
+                "state": {
+                    "no_record_yet": "Encara no hi ha cap registre",
+                    "unknown_pet": "Animal de companyia desconegut"
+                }
+            },
+            "last_event": {
+                "name": "Últim esdeveniment",
+                "state": {
+                    "no_events_yet": "Encara no hi ha esdeveniments",
+                    "event_type_unknown": "Esdeveniment de tipus desconegut",
+                    "cleaning_completed": "S'ha completat la neteja",
+                    "dumping_over": "S'està bolcant",
+                    "reset_over": "Reinicia sobre",
+                    "spray_over": "Ruixa sobre",
+                    "pet_out": "Animal de companyia a fora",
+                    "auto_cleaning_completed": "S'ha completat la neteja automàtica",
+                    "periodic_cleaning_completed": "Neteja periòdica completada",
+                    "manual_cleaning_completed": "S'ha completat la neteja manual",
+                    "auto_cleaning_terminated": "S'ha aturat la neteja automàtica",
+                    "periodic_cleaning_terminated": "Neteja periòdica aturada",
+                    "manual_cleaning_terminated": "S'ha aturat la neteja manual",
+                    "auto_cleaning_failed_full": "Ha fallat la neteja automàtica, la safata de recollida de residus és plena, si us plau, buideu-la aviat",
+                    "auto_cleaning_failed_hall_l": "Error de neteja automàtica, el cilindre no està correctament blocat a lloc, si us plau, comproveu-lo",
+                    "auto_cleaning_failed_hall_t": "Error de neteja automàtica, la tapa superior de la caixa de sorra no està ben col·locada, si us plau, comproveu-ho",
+                    "scheduled_cleaning_failed_full": "Ha fallat la neteja programada, la safata de recollida de residus és plena, si us plau, buideu-la aviat",
+                    "scheduled_cleaning_failed_hall_l": "Error de neteja programada, el cilindre no està correctament blocat a lloc, si us plau, comproveu-ho",
+                    "scheduled_cleaning_failed_hall_t": "Error de neteja programada, la tapa superior de la caixa de sorra no està ben posada, si us plau, comproveu-ho",
+                    "manual_cleaning_failed_full": "Ha fallat la neteja manual, la safata de recollida de residus és plena, si us plau, buideu-la prest",
+                    "manual_cleaning_failed_hall_l": "Error de neteja manual, el cilindre no està ben blocat a lloc, si us plau, comproveu-ho",
+                    "manual_cleaning_failed_hall_t": "Error de neteja manual, la tapa superior de la safata de sorra no està ben posada, si us plau, comproveu-ho",
+                    "auto_cleaning_canceled": "S'ha cancel·lat la neteja automàtica, dispositiu en funcionament",
+                    "periodic_cleaning_canceled": "Neteja periòdica cancel·lada, aparell funcionant",
+                    "manual_cleaning_canceled": "Neteja manual cancel·lada, dispositiu funcionant",
+                    "auto_cleaning_canceled_kitten": "El mode Kitten està activat, s'ha cancel·lat la neteja automàtica",
+                    "periodic_cleaning_canceled_kitten": "El mode Kitten està activat, s'ha cancel·lat la neteja periòdica",
+                    "litter_empty_completed": "Buidatge de la sorra del gat finit",
+                    "litter_empty_terminated": "Buidatge de la sorra del gat aturat",
+                    "litter_empty_failed_full": "Ha fallat el buidatge de la sorra del gat, la safata de recollida de residus és plena, si us plau, buideu-la prest",
+                    "litter_empty_failed_hall_l": "Ha fallat el buidatge de la sorra del gat, el cilindre no està ben blocat a lloc, si us plau, comproveu-ho",
+                    "litter_empty_failed_hall_t": "Ha fallat el buidatge de la sorra del gat, la tapa de la capsa de la sorra no està ben posada, si us plau, comproveu-ho",
+                    "reset_completed": "S'ha completat el reinici del dispositiu",
+                    "reset_terminated": "S'ha aturat el reinici del dispositiu",
+                    "reset_failed_full": "Ha fallat el restabliment del dispositiu, la safata de recollida de residus és plena, si us plau, buideu-la aviat",
+                    "reset_failed_hall_l": "Error de restabliment del dispositiu, el cilindre no està ben blocat a lloc, si us plau, comproveu-ho",
+                    "reset_failed_hall_t": "Ha fallat el restabliment del dispositiu, la tapa de la caixa de sorra no està ben posada, si us plau, comproveu-ho",
+                    "deodorant_finished": "Desodorant acabat",
+                    "periodic_odor_completed": "S'ha completat l'eliminació periòdica de la pudor",
+                    "manual_odor_completed": "S'ha completat l'eliminació manual de la pudor",
+                    "deodorant_finished_liquid_lack": "S'ha acabat el desodorant, no hi ha prou líquid purificant, si us plau, reompliu-lo aviat",
+                    "periodic_odor_completed_liquid_lack": "S'ha completat l'eliminació periòdica de la pudor, no hi ha prou líquid desodorant, si us plau, reompliu-lo aviat",
+                    "manual_odor_completed_liquid_lack": "S'ha completat l'eliminació manual de la pudor, no hi ha prou líquid desodorant, si us plau, reompliu-lo aviat",
+                    "auto_odor_failed": "Ha fallat l'eliminació automàtica la pudor, error en eliminar la pudor",
+                    "periodic_odor_failed": "Error en l'eliminació periòdica de pudors, mal funcionament de l'eliminació de pudors",
+                    "manual_odor_failed": "Error en l'eliminació manual de pudors, mal funcionament de l'eliminació de pudors"
+                },
+                "state_attributes": {
+                    "sub_events": {
+                        "state": {
+                            "no_events_yet": "Encara no hi ha esdeveniments",
+                            "event_type_unknown": "Tipus d'esdeveniment desconegut",
+                            "cleaning_completed": "S'ha completat la neteja",
+                            "dumping_over": "Bolcat complet",
+                            "reset_over": "Reinici complet",
+                            "spray_over": "Ruixat complet",
+                            "pet_out": "Animal de companyia a fora",
+                            "auto_cleaning_completed": "S'ha completat la neteja automàtica",
+                            "periodic_cleaning_completed": "Neteja periòdica completada",
+                            "manual_cleaning_completed": "S'ha completat la neteja manual",
+                            "auto_cleaning_terminated": "S'ha aturat la neteja automàtica",
+                            "periodic_cleaning_terminated": "Neteja periòdica aturada",
+                            "manual_cleaning_terminated": "S'ha aturat la neteja manual",
+                            "auto_cleaning_failed_full": "Ha fallat la neteja automàtica, la safata de recollida de residus és plena, si us plau, buideu-la aviat",
+                            "auto_cleaning_failed_hall_l": "Error de neteja automàtica, el cilindre no està correctament blocat a lloc, si us plau, comproveu-lo",
+                            "auto_cleaning_failed_hall_t": "Error de neteja automàtica, la tapa superior de la caixa de sorra no està ben col·locada, si us plau, comproveu-ho",
+                            "scheduled_cleaning_failed_full": "Ha fallat la neteja programada, la safata de recollida de residus és plena, si us plau, buideu-la aviat",
+                            "scheduled_cleaning_failed_hall_l": "Error de neteja programada, el cilindre no està correctament blocat a lloc, si us plau, comproveu-ho",
+                            "scheduled_cleaning_failed_hall_t": "Error de neteja programada, la tapa superior de la caixa de sorra no està ben posada, si us plau, comproveu-ho",
+                            "manual_cleaning_failed_full": "Ha fallat la neteja manual, la safata de recollida de residus és plena, si us plau, buideu-la prest",
+                            "manual_cleaning_failed_hall_l": "Error de neteja manual, el cilindre no està ben blocat a lloc, si us plau, comproveu-ho",
+                            "manual_cleaning_failed_hall_t": "Error de neteja manual, la tapa superior de la safata de sorra no està ben posada, si us plau, comproveu-ho",
+                            "auto_cleaning_canceled": "S'ha cancel·lat la neteja automàtica, dispositiu en funcionament",
+                            "periodic_cleaning_canceled": "Neteja periòdica cancel·lada, aparell funcionant",
+                            "manual_cleaning_canceled": "Neteja manual cancel·lada, dispositiu funcionant",
+                            "auto_cleaning_canceled_kitten": "El mode Kitten està activat, s'ha cancel·lat la neteja automàtica",
+                            "periodic_cleaning_canceled_kitten": "El mode Kitten està activat, s'ha cancel·lat la neteja periòdica",
+                            "litter_empty_completed": "Buidatge de la sorra del gat finit",
+                            "litter_empty_terminated": "Buidatge de la sorra del gat aturat",
+                            "litter_empty_failed_full": "Ha fallat el buidatge de la sorra del gat, la safata de recollida de residus és plena, si us plau, buideu-la prest",
+                            "litter_empty_failed_hall_l": "Ha fallat el buidatge de la sorra del gat, el cilindre no està ben blocat a lloc, si us plau, comproveu-ho",
+                            "litter_empty_failed_hall_t": "Ha fallat el buidatge de la sorra del gat, la tapa de la capsa de la sorra no està ben posada, si us plau, comproveu-ho",
+                            "reset_completed": "S'ha completat el reinici del dispositiu",
+                            "reset_terminated": "S'ha aturat el reinici del dispositiu",
+                            "reset_failed_full": "Ha fallat el restabliment del dispositiu, la safata de recollida de residus és plena, si us plau, buideu-la aviat",
+                            "reset_failed_hall_l": "Error de restabliment del dispositiu, el cilindre no està ben blocat a lloc, si us plau, comproveu-ho",
+                            "reset_failed_hall_t": "Ha fallat el restabliment del dispositiu, la tapa de la caixa de sorra no està ben posada, si us plau, comproveu-ho",
+                            "deodorant_finished": "Desodorant acabat",
+                            "periodic_odor_completed": "S'ha completat l'eliminació periòdica de la pudor",
+                            "manual_odor_completed": "S'ha completat l'eliminació manual de la pudor",
+                            "deodorant_finished_liquid_lack": "S'ha acabat el desodorant, no hi ha prou líquid purificant, si us plau, reompliu-lo aviat",
+                            "periodic_odor_completed_liquid_lack": "S'ha completat l'eliminació periòdica de la pudor, no hi ha prou líquid desodorant, si us plau, reompliu-lo aviat",
+                            "manual_odor_completed_liquid_lack": "S'ha completat l'eliminació manual de la pudor, no hi ha prou líquid desodorant, si us plau, reompliu-lo aviat",
+                            "auto_odor_failed": "Ha fallat l'eliminació automàtica la pudor, error en eliminar la pudor",
+                            "periodic_odor_failed": "Error en l'eliminació periòdica de pudors, mal funcionament de l'eliminació de pudors",
+                            "manual_odor_failed": "Error en l'eliminació manual de pudors, mal funcionament de l'eliminació de pudors",
+                            "no_sub_events": "No hi ha sub-esdeveniments associats"
+                        }
+                    }
+                }
+            },
+            "last_use_duration": {
+                "name": "Durada de l'últim ús"
+            },
+            "pura_air_battery": {
+                "name": "Bateria Pura Air"
+            },
+            "pura_air_liquid": {
+                "name": "Líquid Pura Air"
+            },
+            "odor_eliminator": {
+                "name": "Eliminador de pudor"
+            },
+            "max_work_state": {
+                "name": "Estat",
+                "state": {
+                    "cleaning_litter_box": "Netejant la caixa de sorra",
+                    "cleaning_litter_box_paused": "S'ha aturat la neteja de la caixa de sorra",
+                    "cleaning_paused_pet_entered": "S'ha aturat la neteja de la caixa de sorra: hi ha entrat l'animal mentre estava engegada, s'han activat els sensors per no enxampar-lo, i l'aparell ha deixat de funcionar. Si us plau, comproveu el dispositiu, prest.",
+                    "cleaning_paused_system_error": "S'ha aturat la neteja de la caixa de sorra: error del sistema, operació pausada",
+                    "cleaning_paused_pet_approach": "S'ha aturat la neteja de la caixa de sorra: s'acosta el vostre gat, operació pausada",
+                    "cleaning_paused_pet_using": "S'ha aturat la neteja de la caixa de sorra: el vostre gat està utilitzant l'aparell, operació pausada",
+                    "resetting_device": "S'està reiniciant el dispositiu",
+                    "litter_box_paused": "S'ha aturat el funcionament de la safata de la brossa",
+                    "paused_pet_entered": "Caixa de sorra aturada: Hi ha entrat un animal mentre funcionava, s'han activat sensors, i l'aparell ha deixat de funcionar. Si us plau, comproveu el dispositiu, prest.",
+                    "paused_system_error": "S'ha aturat la safata de sorra: error del sistema, operació pausada",
+                    "paused_pet_approach": "S'ha aturat la safata de sorra: s'acosta el vostre gat, operació pausada",
+                    "paused_pet_using": "S'ha aturat la safata de sorra: el vostre gat està fent servir l'aparell, operació pausada",
+                    "dumping_litter": "Abocant la sorra del gat",
+                    "dumping_litter_paused": "S'ha pausat l'abocament de la sorra del gat",
+                    "dumping_paused_pet_entered": "S'ha pausat l'abocament de la sorra del gat: hi ha entrat un animal mentre estava en funcionament, s'han activat els sensors, i el dispositiu s'ha aturat. Si us plau, comproveu el dispositiu, prest.",
+                    "dumping_paused_system_error": "S'ha pausat l'abocament de la sorra del gat: error del sistema, operació aturada",
+                    "dumping_paused_pet_approach": "S'ha pausat l'abocament de la sorra del gat: gat aproximant-se, operació aturada",
+                    "dumping_paused_pet_using": "S'ha pausat l'abocament de la sorra del gat: gat fent servir l'aparell, operació aturada",
+                    "resetting": "S'està reiniciant",
+                    "leveling": "Anivellant la sorra del gat, espereu-vos.",
+                    "calibrating": "Calibrant la safata de sorra, espereu-vos.",
+                    "maintenance_mode": "En mode de manteniment",
+                    "maintenance_paused_pet_entered": "Mode de manteniment en pausa: Hi ha entrat un animal mentre estava en funcionament, s'han activat els sensors, el dispositiu ha deixat de funcionar. Si us plau, comproveu el dispositiu, prest.",
+                    "maintenance_paused_cover": "Mode de manteniment en pausa: la tapa superior no està posada. Funcionament aturat",
+                    "maintenance_paused_system_error": "Mode de manteniment en pausa: error del sistema. Funcionament aturat",
+                    "maintenance_paused_pet_approach": "Mode de manteniment en pausa: el vostre gat s'està acostant. Funcionament aturat",
+                    "maintenance_paused_pet_using": "Mode de manteniment en pausa: el vostre gat està fent servir l'aparell. Funcionament aturat",
+                    "maintenance_paused": "Mode de manteniment en pausa",
+                    "exit_maintenance": "Surt del mode de manteniment",
+                    "maintenance_exit_paused_pet_entered": "Sortida del mode de manteniment pausada: hi ha entrat un animal mentre estava en funcionament, s'han activat els sensors, el dispositiu s'ha aturat. Si us plau, comproveu l'aparell, prest.",
+                    "maintenance_exit_paused_cover": "Sortida del mode de manteniment pausada: la tapa superior està mal posada. Operació aturada",
+                    "maintenance_exit_paused_system_error": "Sortida del mode de manteniment pausada: error del sistema. Operació aturada",
+                    "maintenance_exit_paused_pet_approach": "Sortida del mode de manteniment pausada: el vostre gat s'està acostant. Operació aturada",
+                    "maintenance_exit_paused_pet_using": "Sortida del mode de manteniment pausada: el vostre gat està fent servir l'aparell. Operació aturada",
+                    "maintenance_exit_paused": "Sortida del mode de manteniment pausada",
+                    "idle": "Inactiu"
+                }
+            },
+            "avg_eating_time": {
+                "name": "Temps mitjà d'àpat"
+            },
+            "manually_dispensed_hopp_one": {
+                "name": "Peixat manual a la tremuja 1"
+            },
+            "manually_dispensed_hopp_two": {
+                "name": "Peixat manual a la tremuja 2"
+            },
+            "planned_hopp_one": {
+                "name": "Tremuja 1 planificada"
+            },
+            "planned_hopp_two": {
+                "name": "Tremuja 2 planificada"
+            },
+            "planned_dispensed_hopp_one": {
+                "name": "Tremuja 1 peixat planificat"
+            },
+            "planned_dispensed_hopp_two": {
+                "name": "Tremuja 2 peixat planificat"
+            },
+            "dispensed_hopp_one": {
+                "name": "Tremuja 1 peixat"
+            },
+            "dispensed_hopp_two": {
+                "name": "Tremuja 2 peixat"
+            },
+            "humidity": {
+                "name": "Humitat"
+            },
+            "temperature": {
+                "name": "Temperatura"
+            },
+            "air_purified": {
+                "name": "Purificació de l'aire"
+            },
+            "liquid": {
+                "name": "Líquid"
+            },
+            "food_left": {
+                "name": "Menjar a l'esquerra"
+            },
+            "care_plus_end_date": {
+                "name": "Data de finalització de la subscripció Care+"
+            },
+            "times_visited": {
+                "name": "Vegades visitat"
+            },
+            "raw_feed_plan_data": {
+                "name": "Dades del pla d'aliments crus"
+            }
+        },
+        "switch": {
+            "auto_cleaning": {
+                "name": "Neteja automàtica"
+            },
+            "avoid_repeat_cleaning": {
+                "name": "Evita la neteja repetida"
+            },
+            "periodic_cleaning": {
+                "name": "Neteja periòdica"
+            },
+            "periodic_odor_removal": {
+                "name": "Eliminació periòdica de pudors"
+            },
+            "kitten_mode": {
+                "name": "Mode Kitten"
+            },
+            "display": {
+                "name": "Mostra"
+            },
+            "light_weight_cleaning_disabled": {
+                "name": "S'ha apagat el llum de la neteja del pes"
+            },
+            "cont_rotation": {
+                "name": "Rotació contínua"
+            },
+            "deep_cleaning": {
+                "name": "Neteja pregona"
+            },
+            "deep_deodor": {
+                "name": "Desodorització pregona"
+            },
+            "prompt_tone": {
+                "name": "Indica el to"
+            },
+            "system_sound": {
+                "name": "So del sistema"
+            },
+            "camera": {
+                "name": "Cambra"
+            },
+            "microphone": {
+                "name": "Micròfon"
+            },
+            "night_vision": {
+                "name": "Visió nocturna"
+            },
+            "light": {
+                "name": "Il·lumina"
+            },
+            "power": {
+                "name": "Engega"
+            },
+            "do_not_disturb": {
+                "name": "No molesteu"
+            },
+            "indicator_light": {
+                "name": "Llum indicador"
+            },
+            "child_lock": {
+                "name": "Blocatge xiquets"
+            },
+            "dispensing_notification": {
+                "name": "Notificació de peixat"
+            },
+            "pet_visit_notification": {
+                "name": "Notificació de visita d'animals"
+            },
+            "pet_eat_notification": {
+                "name": "Notificació d'àpat d'animals"
+            },
+            "low_battery_notification": {
+                "name": "Notificació de bateria baixa"
+            },
+            "refill_notification": {
+                "name": "Notificació d'emplenament del contenidor"
+            },
+            "food_shortage_alarm": {
+                "name": "Alarma per a l'escassetat d'aliments"
+            },
+            "dispense_tone": {
+                "name": "To de peixar"
+            },
+            "voice_with_dispense": {
+                "name": "Veu en peixar"
+            },
+            "surplus_control": {
+                "name": "Control de superposició"
+            },
+            "camera_status": {
+                "name": "Estat de la cambra"
+            },
+            "system_notification_sound": {
+                "name": "So de notificació del sistema"
+            },
+            "auto_odor_removal": {
+                "name": "Eliminació automàtica de la pudor"
+            }
+        },
+        "text": {
+            "manual_feed": {
+                "name": "Alimentació manual"
+            }
+        },
+        "button": {
+            "reset_filter": {
+                "name": "Reinicia el filtre"
+            },
+            "reset_desiccant": {
+                "name": "Reinicia dessecant"
+            },
+            "cancel_manual_feed": {
+                "name": "Cancel·la l'alimentació manual"
+            },
+            "call_pet": {
+                "name": "Crida la mascota"
+            },
+            "start_cleaning": {
+                "name": "Inicia/Reprèn la neteja"
+            },
+            "pause_cleaning": {
+                "name": "Pausa la neteja"
+            },
+            "odor_removal": {
+                "name": "Eliminació de la pudor"
+            },
+            "reset_deodorizer": {
+                "name": "Restableix el desodorant"
+            },
+            "reset_pura_air_liquid": {
+                "name": "Reinicia el líquid de Pura Air"
+            },
+            "deodorizer_reset": {
+                "name": "Restableix l'eliminació de la pudor"
+            },
+            "light_on": {
+                "name": "Encén el llum"
+            },
+            "start_maintenance": {
+                "name": "Inicia el mode de manteniment"
+            },
+            "exit_maintenance": {
+                "name": "Surt del mode de manteniment"
+            },
+            "pause_exit_maintenance": {
+                "name": "Posa en pausa la sortida del mode de manteniment"
+            },
+            "resume_exit_maintenance": {
+                "name": "Reprèn la sortida del mode de manteniment"
+            },
+            "dump_litter": {
+                "name": "Aboca la sorra"
+            },
+            "pause_dump_litter": {
+                "name": "Posa en pausa l'abocament de la sorra"
+            },
+            "resume_dump_litter": {
+                "name": "Reprèn l'abocament de la sorra"
+            },
+            "food_replenished": {
+                "name": "Aliment emplenat"
+            },
+            "start_cal": {
+                "name": "Inicia el calibratge"
+            },
+            "stop_cal": {
+                "name": "Atura el calibratge"
+            }
+        },
+        "fan": {
+            "purifier": {
+                "name": "Purificador",
+                "state_attributes": {
+                    "preset_mode": {
+                        "state": {
+                            "auto": "Automàtic",
+                            "silent": "Esmortit",
+                            "standard": "Estàndard",
+                            "strong": "Fort"
+                        }
+                    }
+                }
+            }
+        },
+        "number": {
+            "set_weight": {
+                "name": "Estableix el pes"
+            },
+            "surplus": {
+                "name": "Excedent"
+            },
+            "volume": {
+                "name": "Volum"
+            },
+            "manual_feed": {
+                "name": "Alimentació manual"
+            },
+            "cleaning_delay": {
+                "name": "Retard de neteja"
+            },
+            "min_eating_duration": {
+                "name": "Durada mínima de l'àpat"
+            },
+            "hopper_portion_weight_1": {
+                "name": "Pes de la porció a la tremuja 1"
+            },
+            "hopper_portion_weight_2": {
+                "name": "Pes de la porció a la tremuja 2"
+            }
+        },
+        "select": {
+            "surplus_level": {
+                "name": "Nivell de superposició"
+            },
+            "pet_detection_sensitivity": {
+                "name": "Sensibilitat de detecció d'animal de companyia"
+            },
+            "eat_detection_sensitivity": {
+                "name": "Sensibilitat de detecció de l'àpat"
+            },
+            "move_detection_sensitivity": {
+                "name": "Sensibilitat de detecció de moviment"
+            },
+            "light_brightness": {
+                "name": "Brillantor de la llum",
+                "state": {
+                    "low": "Xica",
+                    "medium": "Mitjana",
+                    "high": "Grossa"
+                }
+            },
+            "mode": {
+                "name": "Mode",
+                "state": {
+                    "normal": "Normal",
+                    "smart": "Espavilat"
+                }
+            },
+            "manual_feed": {
+                "name": "Alimentació manual"
+            },
+            "sound": {
+                "name": "So"
+            },
+            "cleaning_interval": {
+                "name": "Interval de neteja"
+            },
+            "litter_type": {
+                "name": "Tipus de sorra",
+                "state": {
+                    "bentonite": "Bentonita",
+                    "tofu": "Tofu",
+                    "mixed": "Barrejada"
+                }
+            }
+        }
+    }
+}

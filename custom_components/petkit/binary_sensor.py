@@ -30,6 +30,12 @@ async def async_setup_entry(
         binary_sensors.append(
             WFWater(coordinator, wf_id)
         )
+        if wf_data.type == 'ctw3':
+            binary_sensors.extend((
+                WFElectricStatus(coordinator, wf_id),
+                WFPumpStatus(coordinator, wf_id)
+            ))
+
 
     for feeder_id, feeder_data in coordinator.data.feeders.items():
 
@@ -1111,3 +1117,117 @@ class CarePlusSubscription(CoordinatorEntity, BinarySensorEntity):
             return "mdi:check-circle"
         else:
             return "mdi:cancel"
+
+
+class WFElectricStatus(CoordinatorEntity, BinarySensorEntity):
+    """Representation of Water Fountain electric status."""
+
+    def __init__(self, coordinator, wf_id):
+        super().__init__(coordinator)
+        self.wf_id = wf_id
+
+    @property
+    def wf_data(self) -> Fountain:
+        """Handle coordinator Water Fountain data."""
+        return self.coordinator.data.water_fountains[self.wf_id]
+
+    @property
+    def device_info(self) -> dict[str, Any]:
+        """Return device registry information for this entity."""
+        return {
+            "identifiers": {(DOMAIN, self.wf_data.id)},
+            "name": self.wf_data.data['name'],
+            "manufacturer": "PetKit",
+            "model": WATER_FOUNTAINS.get(self.wf_data.data["typeCode"], "Unidentified Water Fountain") if "typeCode" in self.wf_data.data else "Unidentified Water Fountain",
+            "sw_version": f'{self.wf_data.data["hardware"]}.{self.wf_data.data["firmware"]}'
+        }
+
+    @property
+    def unique_id(self) -> str:
+        """Sets unique ID for this entity."""
+        return str(self.wf_data.id) + '_electric_status'
+
+    @property
+    def has_entity_name(self) -> bool:
+        """Indicate that entity has name defined."""
+        return True
+
+    @property
+    def translation_key(self) -> str:
+        """Translation key for this entity."""
+        return "electric_status"
+
+    @property
+    def device_class(self) -> BinarySensorDeviceClass:
+        """Return entity device class."""
+        return BinarySensorDeviceClass.POWER
+
+    @property
+    def is_on(self) -> bool:
+        """Return True if the fountain is plugged in."""
+        return self.wf_data.data['status']['electricStatus'] > 0
+
+    @property
+    def icon(self) -> str:
+        """Set icon."""
+        if self.is_on:
+            return 'mdi:power-plug'
+        else:
+            return 'mdi:power-plug-off'
+
+
+class WFPumpStatus(CoordinatorEntity, BinarySensorEntity):
+    """Representation of Water Fountain pump status."""
+
+    def __init__(self, coordinator, wf_id):
+        super().__init__(coordinator)
+        self.wf_id = wf_id
+
+    @property
+    def wf_data(self) -> Fountain:
+        """Handle coordinator Water Fountain data."""
+        return self.coordinator.data.water_fountains[self.wf_id]
+
+    @property
+    def device_info(self) -> dict[str, Any]:
+        """Return device registry information for this entity."""
+        return {
+            "identifiers": {(DOMAIN, self.wf_data.id)},
+            "name": self.wf_data.data['name'],
+            "manufacturer": "PetKit",
+            "model": WATER_FOUNTAINS.get(self.wf_data.data["typeCode"], "Unidentified Water Fountain") if "typeCode" in self.wf_data.data else "Unidentified Water Fountain",
+            "sw_version": f'{self.wf_data.data["hardware"]}.{self.wf_data.data["firmware"]}'
+        }
+
+    @property
+    def unique_id(self) -> str:
+        """Sets unique ID for this entity."""
+        return str(self.wf_data.id) + '_pump_status'
+
+    @property
+    def has_entity_name(self) -> bool:
+        """Indicate that entity has name defined."""
+        return True
+
+    @property
+    def translation_key(self) -> str:
+        """Translation key for this entity."""
+        return "pump_status"
+
+    @property
+    def device_class(self) -> BinarySensorDeviceClass:
+        """Return entity device class."""
+        return BinarySensorDeviceClass.POWER
+
+    @property
+    def is_on(self) -> bool:
+        """Return True if the pump is running."""
+        return self.wf_data.data['status']['runStatus'] == 1
+
+    @property
+    def icon(self) -> str:
+        """Set icon."""
+        if self.is_on:
+            return 'mdi:water-pump'
+        else:
+            return 'mdi:water-pump-off'

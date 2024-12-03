@@ -1,4 +1,5 @@
 """DataUpdateCoordinator for the PetKit integration."""
+
 from __future__ import annotations
 
 from datetime import timedelta
@@ -26,7 +27,9 @@ class PetKitDataUpdateCoordinator(DataUpdateCoordinator):
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
         """Initialize the PetKit coordinator."""
         try:
-            LOGGER.debug(f'Creating PetKit client with email: {entry.data[CONF_EMAIL]}, region: {entry.options[REGION]}, timezone: {entry.options[TIMEZONE]}')
+            LOGGER.debug(
+                f"Creating PetKit client with email: {entry.data[CONF_EMAIL]}, region: {entry.options[REGION]}, timezone: {entry.options[TIMEZONE]}"
+            )
             self.client = PetKitClient(
                 entry.data[CONF_EMAIL],
                 entry.data[CONF_PASSWORD],
@@ -49,7 +52,7 @@ class PetKitDataUpdateCoordinator(DataUpdateCoordinator):
 
         try:
             data = await self.client.get_petkit_data()
-            LOGGER.debug(f'Found the following PetKit devices/pets: {data}')
+            LOGGER.debug(f"Found the following PetKit devices/pets: {data}")
         except (AuthError, RegionError) as error:
             raise ConfigEntryAuthFailed(error) from error
         except (ServerError, PetKitError) as error:

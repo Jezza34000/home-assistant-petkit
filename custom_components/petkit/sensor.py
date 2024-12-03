@@ -1,4 +1,5 @@
 """Sensor platform for PetKit integration."""
+
 from __future__ import annotations
 
 from datetime import datetime
@@ -13,14 +14,14 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import(
+from homeassistant.const import (
     PERCENTAGE,
     SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
     UnitOfEnergy,
     UnitOfMass,
     UnitOfTemperature,
     UnitOfTime,
-    UnitOfVolume
+    UnitOfVolume,
 )
 from homeassistant.core import callback, HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
@@ -35,7 +36,7 @@ from .const import (
     LITTER_BOXES,
     PETKIT_COORDINATOR,
     PURIFIERS,
-    WATER_FOUNTAINS
+    WATER_FOUNTAINS,
 )
 from .coordinator import PetKitDataUpdateCoordinator
 from .litter_events import (
@@ -44,7 +45,7 @@ from .litter_events import (
     MAX_EVENT_DESCRIPTION,
     MAX_EVENT_TYPES,
     MAX_EVENT_TYPE_NAMED,
-    VALID_EVENT_TYPES
+    VALID_EVENT_TYPES,
 )
 
 
@@ -53,150 +54,161 @@ async def async_setup_entry(
 ) -> None:
     """Set Up PetKit Sensor Entities."""
 
-    coordinator: PetKitDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id][PETKIT_COORDINATOR]
+    coordinator: PetKitDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id][
+        PETKIT_COORDINATOR
+    ]
 
     sensors = []
 
     for wf_id, wf_data in coordinator.data.water_fountains.items():
         # Water Fountains (W5)
-        sensors.extend((
-            WFEnergyUse(coordinator, wf_id),
-            WFLastUpdate(coordinator, wf_id),
-            WFFilter(coordinator, wf_id),
-            WFPurifiedWater(coordinator, wf_id),
-        ))
-
-        if wf_data.type == 'ctw3':
-            sensors.append(
-                EversweetBattery(coordinator, wf_id)
+        sensors.extend(
+            (
+                WFEnergyUse(coordinator, wf_id),
+                WFLastUpdate(coordinator, wf_id),
+                WFFilter(coordinator, wf_id),
+                WFPurifiedWater(coordinator, wf_id),
             )
+        )
 
+        if wf_data.type == "ctw3":
+            sensors.append(EversweetBattery(coordinator, wf_id))
 
     for feeder_id, feeder_data in coordinator.data.feeders.items():
         # All Feeders
-        sensors.extend((
-            FeederStatus(coordinator, feeder_id),
-            FeederDesiccant(coordinator, feeder_id),
-            FeederBattStatus(coordinator, feeder_id),
-            FeederRSSI(coordinator, feeder_id),
-            FeederError(coordinator, feeder_id),
-        ))
+        sensors.extend(
+            (
+                FeederStatus(coordinator, feeder_id),
+                FeederDesiccant(coordinator, feeder_id),
+                FeederBattStatus(coordinator, feeder_id),
+                FeederRSSI(coordinator, feeder_id),
+                FeederError(coordinator, feeder_id),
+            )
+        )
 
         # D3 & D4
-        if feeder_data.type in ['d3', 'd4']:
-            sensors.extend((
-                TimesDispensed(coordinator, feeder_id),
-                TotalPlanned(coordinator, feeder_id),
-                PlannedDispensed(coordinator, feeder_id),
-                TotalDispensed(coordinator, feeder_id),
-            ))
+        if feeder_data.type in ["d3", "d4"]:
+            sensors.extend(
+                (
+                    TimesDispensed(coordinator, feeder_id),
+                    TotalPlanned(coordinator, feeder_id),
+                    PlannedDispensed(coordinator, feeder_id),
+                    TotalDispensed(coordinator, feeder_id),
+                )
+            )
 
         # D4 Feeder
-        if feeder_data.type == 'd4':
-            sensors.append(
-                ManualDispensed(coordinator, feeder_id)
-            )
+        if feeder_data.type == "d4":
+            sensors.append(ManualDispensed(coordinator, feeder_id))
 
-        #D3 Feeder
-        if feeder_data.type == 'd3':
-            sensors.extend((
-                AmountEaten(coordinator, feeder_id),
-                TimesEaten(coordinator, feeder_id),
-                FoodInBowl(coordinator, feeder_id),
-            ))
+        # D3 Feeder
+        if feeder_data.type == "d3":
+            sensors.extend(
+                (
+                    AmountEaten(coordinator, feeder_id),
+                    TimesEaten(coordinator, feeder_id),
+                    FoodInBowl(coordinator, feeder_id),
+                )
+            )
 
         # D4s / D4sh Feeder
-        if feeder_data.type in ['d4s', 'd4sh']:
-            sensors.extend((
-                TimesEaten(coordinator, feeder_id),
-                TimesDispensed(coordinator, feeder_id),
-                AvgEatingTime(coordinator, feeder_id),
-                ManualDispensedHopper1(coordinator, feeder_id),
-                ManualDispensedHopper2(coordinator, feeder_id),
-                TotalPlannedHopper1(coordinator, feeder_id),
-                TotalPlannedHopper2(coordinator, feeder_id),
-                PlannedDispensedHopper1(coordinator, feeder_id),
-                PlannedDispensedHopper2(coordinator, feeder_id),
-                TotalDispensedHopper1(coordinator, feeder_id),
-                TotalDispensedHopper2(coordinator, feeder_id),
-            ))
+        if feeder_data.type in ["d4s", "d4sh"]:
+            sensors.extend(
+                (
+                    TimesEaten(coordinator, feeder_id),
+                    TimesDispensed(coordinator, feeder_id),
+                    AvgEatingTime(coordinator, feeder_id),
+                    ManualDispensedHopper1(coordinator, feeder_id),
+                    ManualDispensedHopper2(coordinator, feeder_id),
+                    TotalPlannedHopper1(coordinator, feeder_id),
+                    TotalPlannedHopper2(coordinator, feeder_id),
+                    PlannedDispensedHopper1(coordinator, feeder_id),
+                    PlannedDispensedHopper2(coordinator, feeder_id),
+                    TotalDispensedHopper1(coordinator, feeder_id),
+                    TotalDispensedHopper2(coordinator, feeder_id),
+                )
+            )
 
         # D4sh Feeder
-        if feeder_data.type == 'd4sh':
-            sensors.extend((
-                FoodBowlPercentage(coordinator, feeder_id),
-                EndDateCarePlusSubscription(coordinator, feeder_id),
-                TimesVisited(coordinator, feeder_id),
-                FeederRawPlanData(coordinator, feeder_id),
-            ))
+        if feeder_data.type == "d4sh":
+            sensors.extend(
+                (
+                    FoodBowlPercentage(coordinator, feeder_id),
+                    EndDateCarePlusSubscription(coordinator, feeder_id),
+                    TimesVisited(coordinator, feeder_id),
+                    FeederRawPlanData(coordinator, feeder_id),
+                )
+            )
 
         # Fresh Element Feeder
-        if feeder_data.type == 'feeder':
-            sensors.append(
-                FoodLeft(coordinator, feeder_id)
-            )
+        if feeder_data.type == "feeder":
+            sensors.append(FoodLeft(coordinator, feeder_id))
 
     # Litter boxes
     for lb_id, lb_data in coordinator.data.litter_boxes.items():
-        #Pura Air device for MAX litter box
-        if (lb_data.type == 't4') and ('k3Device' in lb_data.device_detail):
-            sensors.extend((
-                PuraAirBattery(coordinator, lb_id),
-                PuraAirLiquid(coordinator, lb_id)
-            ))
-        # Pura X & MAX
-        if lb_data.type in ['t3', 't4']:
-            sensors.extend((
-                LBDeodorizerLevel(coordinator, lb_id),
-                LBLitterLevel(coordinator, lb_id),
-                LBLitterWeight(coordinator, lb_id),
-                LBRSSI(coordinator, lb_id),
-                LBError(coordinator, lb_id),
-                LBTimesUsed(coordinator, lb_id),
-                LBAverageUse(coordinator, lb_id),
-                LBTotalUse(coordinator, lb_id),
-                LBLastUsedBy(coordinator, lb_id),
-                LBStatus(coordinator, lb_id),
-            ))
-        # Pura X
-        if lb_data.type == 't3':
-            sensors.append(
-                LBLastEvent(coordinator, lb_id)
+        # Pura Air device for MAX litter box
+        if (lb_data.type == "t4") and ("k3Device" in lb_data.device_detail):
+            sensors.extend(
+                (PuraAirBattery(coordinator, lb_id), PuraAirLiquid(coordinator, lb_id))
             )
+        # Pura X & MAX
+        if lb_data.type in ["t3", "t4"]:
+            sensors.extend(
+                (
+                    LBDeodorizerLevel(coordinator, lb_id),
+                    LBLitterLevel(coordinator, lb_id),
+                    LBLitterWeight(coordinator, lb_id),
+                    LBRSSI(coordinator, lb_id),
+                    LBError(coordinator, lb_id),
+                    LBTimesUsed(coordinator, lb_id),
+                    LBAverageUse(coordinator, lb_id),
+                    LBTotalUse(coordinator, lb_id),
+                    LBLastUsedBy(coordinator, lb_id),
+                    LBStatus(coordinator, lb_id),
+                )
+            )
+        # Pura X
+        if lb_data.type == "t3":
+            sensors.append(LBLastEvent(coordinator, lb_id))
         # Pura MAX
-        if lb_data.type == 't4':
-            sensors.extend((
-                MAXLastEvent(coordinator, lb_id),
-                MAXWorkState(coordinator, lb_id)
-            ))
+        if lb_data.type == "t4":
+            sensors.extend(
+                (MAXLastEvent(coordinator, lb_id), MAXWorkState(coordinator, lb_id))
+            )
         # Purobot
-        if lb_data.type == 't6':
-            sensors.extend((
-                LBLitterLevel(coordinator, lb_id),
-                LBRSSI(coordinator, lb_id),
-                LBError(coordinator, lb_id),
-                LBStatus(coordinator, lb_id),
-            ))
+        if lb_data.type == "t6":
+            sensors.extend(
+                (
+                    LBLitterLevel(coordinator, lb_id),
+                    LBRSSI(coordinator, lb_id),
+                    LBError(coordinator, lb_id),
+                    LBStatus(coordinator, lb_id),
+                )
+            )
 
     # Pets
     for pet_id, pet_data in coordinator.data.pets.items():
         # Only add sensor for cats that have litter box(s)
-        if (pet_data.type == 'Cat') and coordinator.data.litter_boxes:
-            sensors.extend((
-                PetRecentWeight(coordinator, pet_id),
-                PetLastUseDuration(coordinator, pet_id),
-            ))
+        if (pet_data.type == "Cat") and coordinator.data.litter_boxes:
+            sensors.extend(
+                (
+                    PetRecentWeight(coordinator, pet_id),
+                    PetLastUseDuration(coordinator, pet_id),
+                )
+            )
 
-    #Purifiers
+    # Purifiers
     for purifier_id, purifier_data in coordinator.data.purifiers.items():
-        sensors.extend((
-            PurifierError(coordinator, purifier_id),
-            PurifierHumidity(coordinator, purifier_id),
-            PurifierTemperature(coordinator, purifier_id),
-            AirPurified(coordinator, purifier_id),
-            PurifierRSSI(coordinator, purifier_id),
-            PurifierLiquid(coordinator, purifier_id)
-        ))
+        sensors.extend(
+            (
+                PurifierError(coordinator, purifier_id),
+                PurifierHumidity(coordinator, purifier_id),
+                PurifierTemperature(coordinator, purifier_id),
+                AirPurified(coordinator, purifier_id),
+                PurifierRSSI(coordinator, purifier_id),
+                PurifierLiquid(coordinator, purifier_id),
+            )
+        )
     async_add_entities(sensors)
 
 
@@ -219,17 +231,23 @@ class WFEnergyUse(CoordinatorEntity, SensorEntity):
 
         return {
             "identifiers": {(DOMAIN, self.wf_data.id)},
-            "name": self.wf_data.data['name'],
+            "name": self.wf_data.data["name"],
             "manufacturer": "PetKit",
-            "model": WATER_FOUNTAINS.get(self.wf_data.data["typeCode"], "Unidentified Water Fountain") if "typeCode" in self.wf_data.data else "Unidentified Water Fountain",
-            "sw_version": f'{self.wf_data.data["hardware"]}.{self.wf_data.data["firmware"]}'
+            "model": (
+                WATER_FOUNTAINS.get(
+                    self.wf_data.data["typeCode"], "Unidentified Water Fountain"
+                )
+                if "typeCode" in self.wf_data.data
+                else "Unidentified Water Fountain"
+            ),
+            "sw_version": f'{self.wf_data.data["hardware"]}.{self.wf_data.data["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.wf_data.id) + '_energy_usage'
+        return str(self.wf_data.id) + "_energy_usage"
 
     @property
     def has_entity_name(self) -> bool:
@@ -247,7 +265,7 @@ class WFEnergyUse(CoordinatorEntity, SensorEntity):
     def native_value(self) -> float:
         """Return total energy usage in kWh."""
 
-        todayPumpRunTime = self.wf_data.data['todayPumpRunTime']
+        todayPumpRunTime = self.wf_data.data["todayPumpRunTime"]
         energy_usage = round(((0.75 * todayPumpRunTime) / 3600000), 4)
         return energy_usage
 
@@ -275,6 +293,7 @@ class WFEnergyUse(CoordinatorEntity, SensorEntity):
 
         return EntityCategory.DIAGNOSTIC
 
+
 class WFLastUpdate(CoordinatorEntity, SensorEntity):
     """Representation of time water fountain data was last updated."""
 
@@ -294,17 +313,23 @@ class WFLastUpdate(CoordinatorEntity, SensorEntity):
 
         return {
             "identifiers": {(DOMAIN, self.wf_data.id)},
-            "name": self.wf_data.data['name'],
+            "name": self.wf_data.data["name"],
             "manufacturer": "PetKit",
-            "model": WATER_FOUNTAINS.get(self.wf_data.data["typeCode"], "Unidentified Water Fountain") if "typeCode" in self.wf_data.data else "Unidentified Water Fountain",
-            "sw_version": f'{self.wf_data.data["hardware"]}.{self.wf_data.data["firmware"]}'
+            "model": (
+                WATER_FOUNTAINS.get(
+                    self.wf_data.data["typeCode"], "Unidentified Water Fountain"
+                )
+                if "typeCode" in self.wf_data.data
+                else "Unidentified Water Fountain"
+            ),
+            "sw_version": f'{self.wf_data.data["hardware"]}.{self.wf_data.data["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.wf_data.id) + '_last_update'
+        return str(self.wf_data.id) + "_last_update"
 
     @property
     def has_entity_name(self) -> bool:
@@ -327,8 +352,8 @@ class WFLastUpdate(CoordinatorEntity, SensorEntity):
         via bluetooth to get the data to update.
         """
 
-        last_update = self.wf_data.data['updateAt']
-        return datetime.fromisoformat(last_update.replace('.000Z', '+00:00'))
+        last_update = self.wf_data.data["updateAt"]
+        return datetime.fromisoformat(last_update.replace(".000Z", "+00:00"))
 
     @property
     def device_class(self) -> SensorDeviceClass:
@@ -350,10 +375,11 @@ class WFLastUpdate(CoordinatorEntity, SensorEntity):
         in the updateAt key.
         """
 
-        if self.wf_data.data['updateAt']:
+        if self.wf_data.data["updateAt"]:
             return True
         else:
             return False
+
 
 class WFFilter(CoordinatorEntity, SensorEntity):
     """Representation of water fountain filter percentage left."""
@@ -374,17 +400,23 @@ class WFFilter(CoordinatorEntity, SensorEntity):
 
         return {
             "identifiers": {(DOMAIN, self.wf_data.id)},
-            "name": self.wf_data.data['name'],
+            "name": self.wf_data.data["name"],
             "manufacturer": "PetKit",
-            "model": WATER_FOUNTAINS.get(self.wf_data.data["typeCode"], "Unidentified Water Fountain") if "typeCode" in self.wf_data.data else "Unidentified Water Fountain",
-            "sw_version": f'{self.wf_data.data["hardware"]}.{self.wf_data.data["firmware"]}'
+            "model": (
+                WATER_FOUNTAINS.get(
+                    self.wf_data.data["typeCode"], "Unidentified Water Fountain"
+                )
+                if "typeCode" in self.wf_data.data
+                else "Unidentified Water Fountain"
+            ),
+            "sw_version": f'{self.wf_data.data["hardware"]}.{self.wf_data.data["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.wf_data.id) + '_filter_percent'
+        return str(self.wf_data.id) + "_filter_percent"
 
     @property
     def has_entity_name(self) -> bool:
@@ -402,7 +434,7 @@ class WFFilter(CoordinatorEntity, SensorEntity):
     def native_value(self) -> int:
         """Return current filter percent left."""
 
-        return self.wf_data.data['filterPercent']
+        return self.wf_data.data["filterPercent"]
 
     @property
     def native_unit_of_measurement(self) -> str:
@@ -420,10 +452,11 @@ class WFFilter(CoordinatorEntity, SensorEntity):
     def icon(self) -> str:
         """Set filter icon."""
 
-        if self.wf_data.data['filterPercent'] == 0:
-            return 'mdi:filter-off'
+        if self.wf_data.data["filterPercent"] == 0:
+            return "mdi:filter-off"
         else:
-            return 'mdi:filter'
+            return "mdi:filter"
+
 
 class WFPurifiedWater(CoordinatorEntity, SensorEntity):
     """Representation of amount of times water has been purified today"""
@@ -444,17 +477,23 @@ class WFPurifiedWater(CoordinatorEntity, SensorEntity):
 
         return {
             "identifiers": {(DOMAIN, self.wf_data.id)},
-            "name": self.wf_data.data['name'],
+            "name": self.wf_data.data["name"],
             "manufacturer": "PetKit",
-            "model": WATER_FOUNTAINS.get(self.wf_data.data["typeCode"], "Unidentified Water Fountain") if "typeCode" in self.wf_data.data else "Unidentified Water Fountain",
-            "sw_version": f'{self.wf_data.data["hardware"]}.{self.wf_data.data["firmware"]}'
+            "model": (
+                WATER_FOUNTAINS.get(
+                    self.wf_data.data["typeCode"], "Unidentified Water Fountain"
+                )
+                if "typeCode" in self.wf_data.data
+                else "Unidentified Water Fountain"
+            ),
+            "sw_version": f'{self.wf_data.data["hardware"]}.{self.wf_data.data["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.wf_data.id) + '_purified_water'
+        return str(self.wf_data.id) + "_purified_water"
 
     @property
     def has_entity_name(self) -> bool:
@@ -472,16 +511,16 @@ class WFPurifiedWater(CoordinatorEntity, SensorEntity):
     def native_value(self) -> int:
         """Return number of times water was purified today."""
 
-        f = ((1.5 * self.wf_data.data['todayPumpRunTime'])/60)
+        f = (1.5 * self.wf_data.data["todayPumpRunTime"]) / 60
         f2 = 2.0
-        purified_today =  int((f/f2))
+        purified_today = int((f / f2))
         return purified_today
 
     @property
     def icon(self) -> str | None:
         """Set icon."""
 
-        return 'mdi:water-pump'
+        return "mdi:water-pump"
 
     @property
     def state_class(self) -> SensorStateClass:
@@ -494,6 +533,7 @@ class WFPurifiedWater(CoordinatorEntity, SensorEntity):
         """Set category to diagnostic."""
 
         return EntityCategory.DIAGNOSTIC
+
 
 class FeederStatus(CoordinatorEntity, SensorEntity):
     """Representation of feeder status."""
@@ -514,17 +554,17 @@ class FeederStatus(CoordinatorEntity, SensorEntity):
 
         return {
             "identifiers": {(DOMAIN, self.feeder_data.id)},
-            "name": self.feeder_data.data['name'],
+            "name": self.feeder_data.data["name"],
             "manufacturer": "PetKit",
             "model": FEEDERS[self.feeder_data.type],
-            "sw_version": f'{self.feeder_data.data["firmware"]}'
+            "sw_version": f'{self.feeder_data.data["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.feeder_data.id) + '_status'
+        return str(self.feeder_data.id) + "_status"
 
     @property
     def has_entity_name(self) -> bool:
@@ -542,13 +582,13 @@ class FeederStatus(CoordinatorEntity, SensorEntity):
     def native_value(self) -> str | None:
         """Return status of the feeder."""
 
-        pim = self.feeder_data.data['state']['pim']
+        pim = self.feeder_data.data["state"]["pim"]
         if pim == 0:
-            return 'offline'
+            return "offline"
         elif pim == 1:
-            return 'normal'
+            return "normal"
         elif pim == 2:
-            return 'on_batteries'
+            return "on_batteries"
         else:
             return None
 
@@ -562,15 +602,16 @@ class FeederStatus(CoordinatorEntity, SensorEntity):
     def icon(self) -> str | None:
         """Set status icon."""
 
-        pim = self.feeder_data.data['state']['pim']
+        pim = self.feeder_data.data["state"]["pim"]
         if pim == 0:
-            return 'mdi:cloud-off'
+            return "mdi:cloud-off"
         elif pim == 1:
-            return 'mdi:cloud'
+            return "mdi:cloud"
         elif pim == 2:
-            return 'mdi:battery'
+            return "mdi:battery"
         else:
             return None
+
 
 class FeederDesiccant(CoordinatorEntity, SensorEntity):
     """Representation of feeder desiccant days remaining."""
@@ -591,17 +632,17 @@ class FeederDesiccant(CoordinatorEntity, SensorEntity):
 
         return {
             "identifiers": {(DOMAIN, self.feeder_data.id)},
-            "name": self.feeder_data.data['name'],
+            "name": self.feeder_data.data["name"],
             "manufacturer": "PetKit",
             "model": FEEDERS[self.feeder_data.type],
-            "sw_version": f'{self.feeder_data.data["firmware"]}'
+            "sw_version": f'{self.feeder_data.data["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.feeder_data.id) + '_desiccant_days'
+        return str(self.feeder_data.id) + "_desiccant_days"
 
     @property
     def has_entity_name(self) -> bool:
@@ -619,7 +660,7 @@ class FeederDesiccant(CoordinatorEntity, SensorEntity):
     def native_value(self) -> int:
         """Return days remaining."""
 
-        return self.feeder_data.data['state']['desiccantLeftDays']
+        return self.feeder_data.data["state"]["desiccantLeftDays"]
 
     @property
     def native_unit_of_measurement(self) -> UnitOfTime:
@@ -637,7 +678,8 @@ class FeederDesiccant(CoordinatorEntity, SensorEntity):
     def icon(self) -> str | None:
         """Set icon."""
 
-        return 'mdi:air-filter'
+        return "mdi:air-filter"
+
 
 class FeederBattStatus(CoordinatorEntity, SensorEntity):
     """Representation of feeder battery status."""
@@ -658,17 +700,17 @@ class FeederBattStatus(CoordinatorEntity, SensorEntity):
 
         return {
             "identifiers": {(DOMAIN, self.feeder_data.id)},
-            "name": self.feeder_data.data['name'],
+            "name": self.feeder_data.data["name"],
             "manufacturer": "PetKit",
             "model": FEEDERS[self.feeder_data.type],
-            "sw_version": f'{self.feeder_data.data["firmware"]}'
+            "sw_version": f'{self.feeder_data.data["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.feeder_data.id) + '_battery_status'
+        return str(self.feeder_data.id) + "_battery_status"
 
     @property
     def has_entity_name(self) -> bool:
@@ -686,7 +728,7 @@ class FeederBattStatus(CoordinatorEntity, SensorEntity):
     def native_value(self) -> str:
         """Return status of the feeder battery."""
 
-        battery_level = self.feeder_data.data['state']['batteryStatus']
+        battery_level = self.feeder_data.data["state"]["batteryStatus"]
         if battery_level == 1:
             return "normal"
         else:
@@ -702,7 +744,7 @@ class FeederBattStatus(CoordinatorEntity, SensorEntity):
     def icon(self) -> str:
         """Set battery status icon."""
 
-        battery_level = self.feeder_data.data['state']['batteryStatus']
+        battery_level = self.feeder_data.data["state"]["batteryStatus"]
         if battery_level == 1:
             return "mdi:battery"
         else:
@@ -715,10 +757,11 @@ class FeederBattStatus(CoordinatorEntity, SensorEntity):
         When Battery isn't being used the level is always 0
         """
 
-        if self.feeder_data.data['state']['pim'] == 2:
+        if self.feeder_data.data["state"]["pim"] == 2:
             return True
         else:
             return False
+
 
 class TotalDispensed(CoordinatorEntity, SensorEntity):
     """Representation of feeder total food dispensed."""
@@ -739,17 +782,17 @@ class TotalDispensed(CoordinatorEntity, SensorEntity):
 
         return {
             "identifiers": {(DOMAIN, self.feeder_data.id)},
-            "name": self.feeder_data.data['name'],
+            "name": self.feeder_data.data["name"],
             "manufacturer": "PetKit",
             "model": FEEDERS[self.feeder_data.type],
-            "sw_version": f'{self.feeder_data.data["firmware"]}'
+            "sw_version": f'{self.feeder_data.data["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.feeder_data.id) + '_total_dispensed'
+        return str(self.feeder_data.id) + "_total_dispensed"
 
     @property
     def has_entity_name(self) -> bool:
@@ -767,7 +810,7 @@ class TotalDispensed(CoordinatorEntity, SensorEntity):
     def native_value(self) -> int:
         """Return total dispensed."""
 
-        return self.feeder_data.data['state']['feedState']['realAmountTotal']
+        return self.feeder_data.data["state"]["feedState"]["realAmountTotal"]
 
     @property
     def native_unit_of_measurement(self) -> UnitOfMass:
@@ -791,7 +834,8 @@ class TotalDispensed(CoordinatorEntity, SensorEntity):
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:food-drumstick'
+        return "mdi:food-drumstick"
+
 
 class TotalPlanned(CoordinatorEntity, SensorEntity):
     """Representation of feeder total planned to be dispensed."""
@@ -812,17 +856,17 @@ class TotalPlanned(CoordinatorEntity, SensorEntity):
 
         return {
             "identifiers": {(DOMAIN, self.feeder_data.id)},
-            "name": self.feeder_data.data['name'],
+            "name": self.feeder_data.data["name"],
             "manufacturer": "PetKit",
             "model": FEEDERS[self.feeder_data.type],
-            "sw_version": f'{self.feeder_data.data["firmware"]}'
+            "sw_version": f'{self.feeder_data.data["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.feeder_data.id) + '_total_planned'
+        return str(self.feeder_data.id) + "_total_planned"
 
     @property
     def has_entity_name(self) -> bool:
@@ -840,7 +884,7 @@ class TotalPlanned(CoordinatorEntity, SensorEntity):
     def native_value(self) -> int:
         """Return total planned."""
 
-        return self.feeder_data.data['state']['feedState']['planAmountTotal']
+        return self.feeder_data.data["state"]["feedState"]["planAmountTotal"]
 
     @property
     def native_unit_of_measurement(self) -> UnitOfMass:
@@ -864,7 +908,8 @@ class TotalPlanned(CoordinatorEntity, SensorEntity):
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:food-drumstick'
+        return "mdi:food-drumstick"
+
 
 class PlannedDispensed(CoordinatorEntity, SensorEntity):
     """Representation of feeder planned that has been dispensed."""
@@ -885,17 +930,17 @@ class PlannedDispensed(CoordinatorEntity, SensorEntity):
 
         return {
             "identifiers": {(DOMAIN, self.feeder_data.id)},
-            "name": self.feeder_data.data['name'],
+            "name": self.feeder_data.data["name"],
             "manufacturer": "PetKit",
             "model": FEEDERS[self.feeder_data.type],
-            "sw_version": f'{self.feeder_data.data["firmware"]}'
+            "sw_version": f'{self.feeder_data.data["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.feeder_data.id) + '_planned_dispensed'
+        return str(self.feeder_data.id) + "_planned_dispensed"
 
     @property
     def has_entity_name(self) -> bool:
@@ -913,7 +958,7 @@ class PlannedDispensed(CoordinatorEntity, SensorEntity):
     def native_value(self) -> int:
         """Return total planned dispensed."""
 
-        return self.feeder_data.data['state']['feedState']['planRealAmountTotal']
+        return self.feeder_data.data["state"]["feedState"]["planRealAmountTotal"]
 
     @property
     def native_unit_of_measurement(self) -> UnitOfMass:
@@ -937,7 +982,8 @@ class PlannedDispensed(CoordinatorEntity, SensorEntity):
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:food-drumstick'
+        return "mdi:food-drumstick"
+
 
 class ManualDispensed(CoordinatorEntity, SensorEntity):
     """Representation of feeder amount that has been manually dispensed."""
@@ -958,17 +1004,17 @@ class ManualDispensed(CoordinatorEntity, SensorEntity):
 
         return {
             "identifiers": {(DOMAIN, self.feeder_data.id)},
-            "name": self.feeder_data.data['name'],
+            "name": self.feeder_data.data["name"],
             "manufacturer": "PetKit",
             "model": FEEDERS[self.feeder_data.type],
-            "sw_version": f'{self.feeder_data.data["firmware"]}'
+            "sw_version": f'{self.feeder_data.data["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.feeder_data.id) + '_manual_dispensed'
+        return str(self.feeder_data.id) + "_manual_dispensed"
 
     @property
     def has_entity_name(self) -> bool:
@@ -986,7 +1032,7 @@ class ManualDispensed(CoordinatorEntity, SensorEntity):
     def native_value(self) -> int:
         """Return total manually dispensed."""
 
-        return self.feeder_data.data['state']['feedState']['addAmountTotal']
+        return self.feeder_data.data["state"]["feedState"]["addAmountTotal"]
 
     @property
     def native_unit_of_measurement(self) -> UnitOfMass:
@@ -1010,7 +1056,8 @@ class ManualDispensed(CoordinatorEntity, SensorEntity):
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:food-drumstick'
+        return "mdi:food-drumstick"
+
 
 class TimesDispensed(CoordinatorEntity, SensorEntity):
     """Representation of feeder amount of times food has been dispensed."""
@@ -1031,17 +1078,17 @@ class TimesDispensed(CoordinatorEntity, SensorEntity):
 
         return {
             "identifiers": {(DOMAIN, self.feeder_data.id)},
-            "name": self.feeder_data.data['name'],
+            "name": self.feeder_data.data["name"],
             "manufacturer": "PetKit",
             "model": FEEDERS[self.feeder_data.type],
-            "sw_version": f'{self.feeder_data.data["firmware"]}'
+            "sw_version": f'{self.feeder_data.data["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.feeder_data.id) + '_times_dispensed'
+        return str(self.feeder_data.id) + "_times_dispensed"
 
     @property
     def has_entity_name(self) -> bool:
@@ -1059,10 +1106,10 @@ class TimesDispensed(CoordinatorEntity, SensorEntity):
     def native_value(self) -> int:
         """Return total times dispensed."""
 
-        if self.feeder_data.type == 'd3':
-            return len(self.feeder_data.data['state']['feedState']['feedTimes'])
+        if self.feeder_data.type == "d3":
+            return len(self.feeder_data.data["state"]["feedState"]["feedTimes"])
         else:
-            return self.feeder_data.data['state']['feedState']['times']
+            return self.feeder_data.data["state"]["feedState"]["times"]
 
     @property
     def state_class(self) -> SensorStateClass:
@@ -1080,7 +1127,8 @@ class TimesDispensed(CoordinatorEntity, SensorEntity):
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:food-drumstick'
+        return "mdi:food-drumstick"
+
 
 class FeederRSSI(CoordinatorEntity, SensorEntity):
     """Representation of feeder WiFi connection strength."""
@@ -1101,17 +1149,17 @@ class FeederRSSI(CoordinatorEntity, SensorEntity):
 
         return {
             "identifiers": {(DOMAIN, self.feeder_data.id)},
-            "name": self.feeder_data.data['name'],
+            "name": self.feeder_data.data["name"],
             "manufacturer": "PetKit",
             "model": FEEDERS[self.feeder_data.type],
-            "sw_version": f'{self.feeder_data.data["firmware"]}'
+            "sw_version": f'{self.feeder_data.data["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.feeder_data.id) + '_feeder_rssi'
+        return str(self.feeder_data.id) + "_feeder_rssi"
 
     @property
     def has_entity_name(self) -> bool:
@@ -1129,7 +1177,7 @@ class FeederRSSI(CoordinatorEntity, SensorEntity):
     def native_value(self) -> int:
         """Return RSSI measurement."""
 
-        return self.feeder_data.data['state']['wifi']['rsq']
+        return self.feeder_data.data["state"]["wifi"]["rsq"]
 
     @property
     def state_class(self) -> SensorStateClass:
@@ -1159,7 +1207,7 @@ class FeederRSSI(CoordinatorEntity, SensorEntity):
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:wifi'
+        return "mdi:wifi"
 
 
 class AmountEaten(CoordinatorEntity, SensorEntity):
@@ -1181,17 +1229,17 @@ class AmountEaten(CoordinatorEntity, SensorEntity):
 
         return {
             "identifiers": {(DOMAIN, self.feeder_data.id)},
-            "name": self.feeder_data.data['name'],
+            "name": self.feeder_data.data["name"],
             "manufacturer": "PetKit",
             "model": FEEDERS[self.feeder_data.type],
-            "sw_version": f'{self.feeder_data.data["firmware"]}'
+            "sw_version": f'{self.feeder_data.data["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.feeder_data.id) + '_amount_eaten'
+        return str(self.feeder_data.id) + "_amount_eaten"
 
     @property
     def has_entity_name(self) -> bool:
@@ -1209,7 +1257,7 @@ class AmountEaten(CoordinatorEntity, SensorEntity):
     def native_value(self) -> int:
         """Return total amount eaten."""
 
-        return self.feeder_data.data['state']['feedState']['eatAmountTotal']
+        return self.feeder_data.data["state"]["feedState"]["eatAmountTotal"]
 
     @property
     def native_unit_of_measurement(self) -> UnitOfMass:
@@ -1233,7 +1281,7 @@ class AmountEaten(CoordinatorEntity, SensorEntity):
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:food-drumstick'
+        return "mdi:food-drumstick"
 
 
 class TimesEaten(CoordinatorEntity, SensorEntity):
@@ -1255,17 +1303,17 @@ class TimesEaten(CoordinatorEntity, SensorEntity):
 
         return {
             "identifiers": {(DOMAIN, self.feeder_data.id)},
-            "name": self.feeder_data.data['name'],
+            "name": self.feeder_data.data["name"],
             "manufacturer": "PetKit",
             "model": FEEDERS[self.feeder_data.type],
-            "sw_version": f'{self.feeder_data.data["firmware"]}'
+            "sw_version": f'{self.feeder_data.data["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.feeder_data.id) + '_times_eaten'
+        return str(self.feeder_data.id) + "_times_eaten"
 
     @property
     def has_entity_name(self) -> bool:
@@ -1283,10 +1331,10 @@ class TimesEaten(CoordinatorEntity, SensorEntity):
     def native_value(self) -> int:
         """Return total times eaten."""
 
-        if self.feeder_data.type == 'd4s':
-            return self.feeder_data.data['state']['feedState']['eatCount']
+        if self.feeder_data.type == "d4s":
+            return self.feeder_data.data["state"]["feedState"]["eatCount"]
         else:
-            return len(self.feeder_data.data['state']['feedState']['eatTimes'])
+            return len(self.feeder_data.data["state"]["feedState"]["eatTimes"])
 
     @property
     def state_class(self) -> SensorStateClass:
@@ -1304,7 +1352,7 @@ class TimesEaten(CoordinatorEntity, SensorEntity):
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:food-drumstick'
+        return "mdi:food-drumstick"
 
 
 class FoodInBowl(CoordinatorEntity, SensorEntity):
@@ -1326,17 +1374,17 @@ class FoodInBowl(CoordinatorEntity, SensorEntity):
 
         return {
             "identifiers": {(DOMAIN, self.feeder_data.id)},
-            "name": self.feeder_data.data['name'],
+            "name": self.feeder_data.data["name"],
             "manufacturer": "PetKit",
             "model": FEEDERS[self.feeder_data.type],
-            "sw_version": f'{self.feeder_data.data["firmware"]}'
+            "sw_version": f'{self.feeder_data.data["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.feeder_data.id) + '_food_in_bowl'
+        return str(self.feeder_data.id) + "_food_in_bowl"
 
     @property
     def has_entity_name(self) -> bool:
@@ -1354,7 +1402,7 @@ class FoodInBowl(CoordinatorEntity, SensorEntity):
     def native_value(self) -> int:
         """Return current amount of food in bowl."""
 
-        return self.feeder_data.data['state']['weight']
+        return self.feeder_data.data["state"]["weight"]
 
     @property
     def native_unit_of_measurement(self) -> UnitOfMass:
@@ -1378,7 +1426,7 @@ class FoodInBowl(CoordinatorEntity, SensorEntity):
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:food-drumstick'
+        return "mdi:food-drumstick"
 
 
 class FeederError(CoordinatorEntity, SensorEntity):
@@ -1400,17 +1448,17 @@ class FeederError(CoordinatorEntity, SensorEntity):
 
         return {
             "identifiers": {(DOMAIN, self.feeder_data.id)},
-            "name": self.feeder_data.data['name'],
+            "name": self.feeder_data.data["name"],
             "manufacturer": "PetKit",
             "model": FEEDERS[self.feeder_data.type],
-            "sw_version": f'{self.feeder_data.data["firmware"]}'
+            "sw_version": f'{self.feeder_data.data["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.feeder_data.id) + '_feeder_error'
+        return str(self.feeder_data.id) + "_feeder_error"
 
     @property
     def has_entity_name(self) -> bool:
@@ -1428,10 +1476,10 @@ class FeederError(CoordinatorEntity, SensorEntity):
     def native_value(self) -> str:
         """Return current error if there is one."""
 
-        if 'errorMsg' in self.feeder_data.data['state']:
-            return self.feeder_data.data['state']['errorMsg']
+        if "errorMsg" in self.feeder_data.data["state"]:
+            return self.feeder_data.data["state"]["errorMsg"]
         else:
-            return 'no_error'
+            return "no_error"
 
     @property
     def entity_category(self) -> EntityCategory:
@@ -1443,7 +1491,7 @@ class FeederError(CoordinatorEntity, SensorEntity):
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:alert-circle'
+        return "mdi:alert-circle"
 
 
 class LBDeodorizerLevel(CoordinatorEntity, SensorEntity):
@@ -1465,17 +1513,17 @@ class LBDeodorizerLevel(CoordinatorEntity, SensorEntity):
 
         return {
             "identifiers": {(DOMAIN, self.lb_data.id)},
-            "name": self.lb_data.device_detail['name'],
+            "name": self.lb_data.device_detail["name"],
             "manufacturer": "PetKit",
             "model": LITTER_BOXES[self.lb_data.type],
-            "sw_version": f'{self.lb_data.device_detail["firmware"]}'
+            "sw_version": f'{self.lb_data.device_detail["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.lb_data.id) + '_deodorizer_level'
+        return str(self.lb_data.id) + "_deodorizer_level"
 
     @property
     def has_entity_name(self) -> bool:
@@ -1487,8 +1535,8 @@ class LBDeodorizerLevel(CoordinatorEntity, SensorEntity):
     def translation_key(self) -> str:
         """Translation key for this entity."""
 
-        #Pura MAX uses N50 deodorizer and not liquid
-        if self.lb_data.type == 't4':
+        # Pura MAX uses N50 deodorizer and not liquid
+        if self.lb_data.type == "t4":
             return "odor_eliminator"
         else:
             return "deodorizer_level"
@@ -1497,25 +1545,25 @@ class LBDeodorizerLevel(CoordinatorEntity, SensorEntity):
     def icon(self) -> str:
         """Set icon."""
 
-        if self.lb_data.type == 't4':
-            return 'mdi:air-filter'
+        if self.lb_data.type == "t4":
+            return "mdi:air-filter"
         else:
-            return 'mdi:spray-bottle'
+            return "mdi:spray-bottle"
 
     @property
     def native_value(self) -> int:
         """Return current percentage or days left."""
 
-        #Pura MAX
-        if self.lb_data.type == 't4':
-            deodorant_days = self.lb_data.device_detail['state']['deodorantLeftDays']
+        # Pura MAX
+        if self.lb_data.type == "t4":
+            deodorant_days = self.lb_data.device_detail["state"]["deodorantLeftDays"]
             if deodorant_days < 1:
                 return 0
             else:
                 return deodorant_days
-        #Pura X
+        # Pura X
         else:
-            return self.lb_data.device_detail['state']['liquid']
+            return self.lb_data.device_detail["state"]["liquid"]
 
     @property
     def entity_category(self) -> EntityCategory:
@@ -1533,12 +1581,13 @@ class LBDeodorizerLevel(CoordinatorEntity, SensorEntity):
     def native_unit_of_measurement(self) -> str | UnitOfTime:
         """Return percent or days as the native unit."""
 
-        #Pura MAX
-        if self.lb_data.type == 't4':
+        # Pura MAX
+        if self.lb_data.type == "t4":
             return UnitOfTime.DAYS
-        #Pura X
+        # Pura X
         else:
             return PERCENTAGE
+
 
 class LBLitterLevel(CoordinatorEntity, SensorEntity):
     """Representation of litter box litter percentage left."""
@@ -1559,17 +1608,17 @@ class LBLitterLevel(CoordinatorEntity, SensorEntity):
 
         return {
             "identifiers": {(DOMAIN, self.lb_data.id)},
-            "name": self.lb_data.device_detail['name'],
+            "name": self.lb_data.device_detail["name"],
             "manufacturer": "PetKit",
             "model": LITTER_BOXES[self.lb_data.type],
-            "sw_version": f'{self.lb_data.device_detail["firmware"]}'
+            "sw_version": f'{self.lb_data.device_detail["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.lb_data.id) + '_litter_level'
+        return str(self.lb_data.id) + "_litter_level"
 
     @property
     def has_entity_name(self) -> bool:
@@ -1587,13 +1636,13 @@ class LBLitterLevel(CoordinatorEntity, SensorEntity):
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:landslide'
+        return "mdi:landslide"
 
     @property
     def native_value(self) -> int:
         """Return current percentage."""
 
-        return self.lb_data.device_detail['state']['sandPercent']
+        return self.lb_data.device_detail["state"]["sandPercent"]
 
     @property
     def entity_category(self) -> EntityCategory:
@@ -1633,17 +1682,17 @@ class LBLitterWeight(CoordinatorEntity, SensorEntity):
 
         return {
             "identifiers": {(DOMAIN, self.lb_data.id)},
-            "name": self.lb_data.device_detail['name'],
+            "name": self.lb_data.device_detail["name"],
             "manufacturer": "PetKit",
             "model": LITTER_BOXES[self.lb_data.type],
-            "sw_version": f'{self.lb_data.device_detail["firmware"]}'
+            "sw_version": f'{self.lb_data.device_detail["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.lb_data.id) + '_litter_weight'
+        return str(self.lb_data.id) + "_litter_weight"
 
     @property
     def has_entity_name(self) -> bool:
@@ -1661,13 +1710,13 @@ class LBLitterWeight(CoordinatorEntity, SensorEntity):
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:landslide'
+        return "mdi:landslide"
 
     @property
     def native_value(self) -> float:
         """Return current weight in Kg."""
 
-        return round((self.lb_data.device_detail['state']['sandWeight'] / 1000), 1)
+        return round((self.lb_data.device_detail["state"]["sandWeight"] / 1000), 1)
 
     @property
     def entity_category(self) -> EntityCategory:
@@ -1713,17 +1762,17 @@ class LBRSSI(CoordinatorEntity, SensorEntity):
 
         return {
             "identifiers": {(DOMAIN, self.lb_data.id)},
-            "name": self.lb_data.device_detail['name'],
+            "name": self.lb_data.device_detail["name"],
             "manufacturer": "PetKit",
             "model": LITTER_BOXES[self.lb_data.type],
-            "sw_version": f'{self.lb_data.device_detail["firmware"]}'
+            "sw_version": f'{self.lb_data.device_detail["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.lb_data.id) + '_rssi'
+        return str(self.lb_data.id) + "_rssi"
 
     @property
     def has_entity_name(self) -> bool:
@@ -1741,13 +1790,13 @@ class LBRSSI(CoordinatorEntity, SensorEntity):
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:wifi'
+        return "mdi:wifi"
 
     @property
     def native_value(self) -> int:
         """Return current signal strength."""
 
-        return self.lb_data.device_detail['state']['wifi']['rsq']
+        return self.lb_data.device_detail["state"]["wifi"]["rsq"]
 
     @property
     def entity_category(self) -> EntityCategory:
@@ -1793,17 +1842,17 @@ class LBError(CoordinatorEntity, SensorEntity):
 
         return {
             "identifiers": {(DOMAIN, self.lb_data.id)},
-            "name": self.lb_data.device_detail['name'],
+            "name": self.lb_data.device_detail["name"],
             "manufacturer": "PetKit",
             "model": LITTER_BOXES[self.lb_data.type],
-            "sw_version": f'{self.lb_data.device_detail["firmware"]}'
+            "sw_version": f'{self.lb_data.device_detail["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.lb_data.id) + '_error'
+        return str(self.lb_data.id) + "_error"
 
     @property
     def has_entity_name(self) -> bool:
@@ -1821,10 +1870,10 @@ class LBError(CoordinatorEntity, SensorEntity):
     def native_value(self) -> str:
         """Return current error if there is one."""
 
-        if 'errorMsg' in self.lb_data.device_detail['state']:
-            return self.lb_data.device_detail['state']['errorMsg']
+        if "errorMsg" in self.lb_data.device_detail["state"]:
+            return self.lb_data.device_detail["state"]["errorMsg"]
         else:
-            return 'no_error'
+            return "no_error"
 
     @property
     def entity_category(self) -> EntityCategory:
@@ -1836,7 +1885,7 @@ class LBError(CoordinatorEntity, SensorEntity):
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:alert-circle'
+        return "mdi:alert-circle"
 
 
 class LBTimesUsed(CoordinatorEntity, SensorEntity):
@@ -1858,17 +1907,17 @@ class LBTimesUsed(CoordinatorEntity, SensorEntity):
 
         return {
             "identifiers": {(DOMAIN, self.lb_data.id)},
-            "name": self.lb_data.device_detail['name'],
+            "name": self.lb_data.device_detail["name"],
             "manufacturer": "PetKit",
             "model": LITTER_BOXES[self.lb_data.type],
-            "sw_version": f'{self.lb_data.device_detail["firmware"]}'
+            "sw_version": f'{self.lb_data.device_detail["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.lb_data.id) + '_times_used'
+        return str(self.lb_data.id) + "_times_used"
 
     @property
     def has_entity_name(self) -> bool:
@@ -1886,7 +1935,7 @@ class LBTimesUsed(CoordinatorEntity, SensorEntity):
     def native_value(self) -> int:
         """Return current usage count."""
 
-        return self.lb_data.statistics['times']
+        return self.lb_data.statistics["times"]
 
     @property
     def state_class(self) -> SensorStateClass:
@@ -1898,7 +1947,7 @@ class LBTimesUsed(CoordinatorEntity, SensorEntity):
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:counter'
+        return "mdi:counter"
 
 
 class LBAverageUse(CoordinatorEntity, SensorEntity):
@@ -1920,17 +1969,17 @@ class LBAverageUse(CoordinatorEntity, SensorEntity):
 
         return {
             "identifiers": {(DOMAIN, self.lb_data.id)},
-            "name": self.lb_data.device_detail['name'],
+            "name": self.lb_data.device_detail["name"],
             "manufacturer": "PetKit",
             "model": LITTER_BOXES[self.lb_data.type],
-            "sw_version": f'{self.lb_data.device_detail["firmware"]}'
+            "sw_version": f'{self.lb_data.device_detail["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.lb_data.id) + '_average_use'
+        return str(self.lb_data.id) + "_average_use"
 
     @property
     def has_entity_name(self) -> bool:
@@ -1948,7 +1997,7 @@ class LBAverageUse(CoordinatorEntity, SensorEntity):
     def native_value(self) -> int:
         """Return current usage time average in seconds."""
 
-        return self.lb_data.statistics['avgTime']
+        return self.lb_data.statistics["avgTime"]
 
     @property
     def native_unit_of_measurement(self) -> UnitOfTime:
@@ -1966,7 +2015,7 @@ class LBAverageUse(CoordinatorEntity, SensorEntity):
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:clock'
+        return "mdi:clock"
 
 
 class LBTotalUse(CoordinatorEntity, SensorEntity):
@@ -1988,17 +2037,17 @@ class LBTotalUse(CoordinatorEntity, SensorEntity):
 
         return {
             "identifiers": {(DOMAIN, self.lb_data.id)},
-            "name": self.lb_data.device_detail['name'],
+            "name": self.lb_data.device_detail["name"],
             "manufacturer": "PetKit",
             "model": LITTER_BOXES[self.lb_data.type],
-            "sw_version": f'{self.lb_data.device_detail["firmware"]}'
+            "sw_version": f'{self.lb_data.device_detail["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.lb_data.id) + '_total_use'
+        return str(self.lb_data.id) + "_total_use"
 
     @property
     def has_entity_name(self) -> bool:
@@ -2016,7 +2065,7 @@ class LBTotalUse(CoordinatorEntity, SensorEntity):
     def native_value(self) -> int:
         """Return current usage time average in seconds."""
 
-        return self.lb_data.statistics['totalTime']
+        return self.lb_data.statistics["totalTime"]
 
     @property
     def native_unit_of_measurement(self) -> UnitOfTime:
@@ -2034,7 +2083,7 @@ class LBTotalUse(CoordinatorEntity, SensorEntity):
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:clock'
+        return "mdi:clock"
 
 
 class LBLastUsedBy(CoordinatorEntity, SensorEntity):
@@ -2056,17 +2105,17 @@ class LBLastUsedBy(CoordinatorEntity, SensorEntity):
 
         return {
             "identifiers": {(DOMAIN, self.lb_data.id)},
-            "name": self.lb_data.device_detail['name'],
+            "name": self.lb_data.device_detail["name"],
             "manufacturer": "PetKit",
             "model": LITTER_BOXES[self.lb_data.type],
-            "sw_version": f'{self.lb_data.device_detail["firmware"]}'
+            "sw_version": f'{self.lb_data.device_detail["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.lb_data.id) + '_last_used_by'
+        return str(self.lb_data.id) + "_last_used_by"
 
     @property
     def has_entity_name(self) -> bool:
@@ -2084,20 +2133,20 @@ class LBLastUsedBy(CoordinatorEntity, SensorEntity):
     def native_value(self) -> str:
         """Return last pet to use the litter box."""
 
-        if self.lb_data.statistics['statisticInfo']:
-            last_record = self.lb_data.statistics['statisticInfo'][-1]
-            if last_record['petId'] == '0':
-                return 'unknown_pet'
+        if self.lb_data.statistics["statisticInfo"]:
+            last_record = self.lb_data.statistics["statisticInfo"][-1]
+            if last_record["petId"] == "0":
+                return "unknown_pet"
             else:
-                return last_record['petName']
+                return last_record["petName"]
         else:
-            return 'no_record_yet'
+            return "no_record_yet"
 
     @property
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:cat'
+        return "mdi:cat"
 
 
 class LBLastEvent(CoordinatorEntity, SensorEntity):
@@ -2120,17 +2169,17 @@ class LBLastEvent(CoordinatorEntity, SensorEntity):
 
         return {
             "identifiers": {(DOMAIN, self.lb_data.id)},
-            "name": self.lb_data.device_detail['name'],
+            "name": self.lb_data.device_detail["name"],
             "manufacturer": "PetKit",
             "model": LITTER_BOXES[self.lb_data.type],
-            "sw_version": f'{self.lb_data.device_detail["firmware"]}'
+            "sw_version": f'{self.lb_data.device_detail["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.lb_data.id) + '_last_event'
+        return str(self.lb_data.id) + "_last_event"
 
     @property
     def has_entity_name(self) -> bool:
@@ -2150,28 +2199,28 @@ class LBLastEvent(CoordinatorEntity, SensorEntity):
 
         if self.lb_data.device_record:
             last_record = self.lb_data.device_record[-1]
-            if last_record['subContent']:
-                self.sub_events = self.sub_events_to_description(last_record['subContent'])
+            if last_record["subContent"]:
+                self.sub_events = self.sub_events_to_description(
+                    last_record["subContent"]
+                )
             else:
-                self.sub_events = 'no_sub_events'
-            event = self.result_to_description(last_record['eventType'], last_record)
+                self.sub_events = "no_sub_events"
+            event = self.result_to_description(last_record["eventType"], last_record)
             return event
         else:
-            return 'no_events_yet'
+            return "no_events_yet"
 
     @property
     def extra_state_attributes(self):
         """Return sub events associated with the main event."""
 
-        return {
-            'sub_events': self.sub_events
-        }
+        return {"sub_events": self.sub_events}
 
     @property
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:calendar'
+        return "mdi:calendar"
 
     @property
     def entity_category(self) -> EntityCategory:
@@ -2184,23 +2233,25 @@ class LBLastEvent(CoordinatorEntity, SensorEntity):
 
         # Make sure event_type is valid
         if event_type not in VALID_EVENT_TYPES:
-            return 'event_type_unknown'
+            return "event_type_unknown"
 
         # Pet out events don't have result or reason
         if event_type != 10:
-            result = record['content']['result']
-            if 'startReason' in record['content']:
-                reason = record['content']['startReason']
+            result = record["content"]["result"]
+            if "startReason" in record["content"]:
+                reason = record["content"]["startReason"]
 
             if event_type == 5:
                 if result == 2:
-                    if 'error' in record['content']:
-                        error = record['content']['error']
+                    if "error" in record["content"]:
+                        error = record["content"]["error"]
                     else:
                         return EVENT_TYPE_NAMED[event_type]
 
                     try:
-                        description = EVENT_DESCRIPTION[event_type][result][reason][error]
+                        description = EVENT_DESCRIPTION[event_type][result][reason][
+                            error
+                        ]
                     except KeyError:
                         return EVENT_TYPE_NAMED[event_type]
                     return description
@@ -2214,8 +2265,8 @@ class LBLastEvent(CoordinatorEntity, SensorEntity):
 
             if event_type in [6, 7]:
                 if result == 2:
-                    if 'error' in record['content']:
-                        error = record['content']['error']
+                    if "error" in record["content"]:
+                        error = record["content"]["error"]
                     else:
                         return EVENT_TYPE_NAMED[event_type]
 
@@ -2240,20 +2291,21 @@ class LBLastEvent(CoordinatorEntity, SensorEntity):
                 return description
 
         if event_type == 10:
-            if (record['petId'] == '-2') or (record['petId'] == '-1'):
-                name = 'Unknown'
+            if (record["petId"] == "-2") or (record["petId"] == "-1"):
+                name = "Unknown"
             else:
-                name = record['petName']
-            return f'{name} used the litter box'
+                name = record["petName"]
+            return f"{name} used the litter box"
 
     def sub_events_to_description(self, sub_events: list[dict[str, Any]]) -> list[str]:
         """Create a list containing all of the sub events associated with an event to be used as attribute"""
 
         event_list: list[str] = []
         for event in sub_events:
-            description = self.result_to_description(event['eventType'], event)
+            description = self.result_to_description(event["eventType"], event)
             event_list.append(description)
         return event_list
+
 
 class PetRecentWeight(CoordinatorEntity, SensorEntity, RestoreEntity):
     """Representation of most recent weight measured by litter box."""
@@ -2280,7 +2332,7 @@ class PetRecentWeight(CoordinatorEntity, SensorEntity, RestoreEntity):
 
         return {
             "identifiers": {(DOMAIN, self.pet_data.id)},
-            "name": self.pet_data.data['name'],
+            "name": self.pet_data.data["name"],
             "manufacturer": "PetKit",
             "model": self.pet_data.type,
         }
@@ -2289,7 +2341,7 @@ class PetRecentWeight(CoordinatorEntity, SensorEntity, RestoreEntity):
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return self.pet_data.id + '_recent_weight'
+        return self.pet_data.id + "_recent_weight"
 
     @property
     def has_entity_name(self) -> bool:
@@ -2307,8 +2359,8 @@ class PetRecentWeight(CoordinatorEntity, SensorEntity, RestoreEntity):
     def entity_picture(self) -> str | None:
         """Grab associated pet picture."""
 
-        if 'avatar' in self.pet_data.data:
-            return self.pet_data.data['avatar']
+        if "avatar" in self.pet_data.data:
+            return self.pet_data.data["avatar"]
         else:
             return None
 
@@ -2316,10 +2368,10 @@ class PetRecentWeight(CoordinatorEntity, SensorEntity, RestoreEntity):
     def icon(self) -> str | None:
         """Set icon if the pet doesn't have an avatar."""
 
-        if 'avatar' in self.pet_data.data:
+        if "avatar" in self.pet_data.data:
             return None
         else:
-            return 'mdi:weight'
+            return "mdi:weight"
 
     @property
     def native_unit_of_measurement(self) -> UnitOfMass:
@@ -2371,15 +2423,21 @@ class PetRecentWeight(CoordinatorEntity, SensorEntity, RestoreEntity):
         weight_dict: dict[int, int] = {}
 
         for lb_id, lb_data in self.litter_boxes.items():
-            if 'statisticInfo' in lb_data.statistics:
+            if "statisticInfo" in lb_data.statistics:
                 try:
-                    final_idx = max(index for index, stat in enumerate(lb_data.statistics['statisticInfo']) if stat.get('petId') == self.pet_data.id)
+                    final_idx = max(
+                        index
+                        for index, stat in enumerate(
+                            lb_data.statistics["statisticInfo"]
+                        )
+                        if stat.get("petId") == self.pet_data.id
+                    )
                 except ValueError:
                     continue
                 else:
-                    last_stat = lb_data.statistics['statisticInfo'][final_idx]
-                    weight = last_stat.get('petWeight')
-                    time = last_stat.get('xTime')
+                    last_stat = lb_data.statistics["statisticInfo"][final_idx]
+                    weight = last_stat.get("petWeight")
+                    time = last_stat.get("xTime")
                     if weight is not None and time is not None:
                         weight_dict[time] = weight
         sorted_dict = dict(sorted(weight_dict.items()))
@@ -2411,7 +2469,7 @@ class PetLastUseDuration(CoordinatorEntity, SensorEntity, RestoreEntity):
 
         return {
             "identifiers": {(DOMAIN, self.pet_data.id)},
-            "name": self.pet_data.data['name'],
+            "name": self.pet_data.data["name"],
             "manufacturer": "PetKit",
             "model": self.pet_data.type,
         }
@@ -2420,7 +2478,7 @@ class PetLastUseDuration(CoordinatorEntity, SensorEntity, RestoreEntity):
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return self.pet_data.id + '_last_use_duration'
+        return self.pet_data.id + "_last_use_duration"
 
     @property
     def has_entity_name(self) -> bool:
@@ -2438,8 +2496,8 @@ class PetLastUseDuration(CoordinatorEntity, SensorEntity, RestoreEntity):
     def entity_picture(self) -> str | None:
         """Grab associated pet picture."""
 
-        if 'avatar' in self.pet_data.data:
-            return self.pet_data.data['avatar']
+        if "avatar" in self.pet_data.data:
+            return self.pet_data.data["avatar"]
         else:
             return None
 
@@ -2447,10 +2505,10 @@ class PetLastUseDuration(CoordinatorEntity, SensorEntity, RestoreEntity):
     def icon(self) -> str | None:
         """Set icon if the pet doesn't have an avatar."""
 
-        if 'avatar' in self.pet_data.data:
+        if "avatar" in self.pet_data.data:
             return None
         else:
-            return 'mdi:clock'
+            return "mdi:clock"
 
     @property
     def native_unit_of_measurement(self) -> UnitOfTime:
@@ -2495,16 +2553,22 @@ class PetLastUseDuration(CoordinatorEntity, SensorEntity, RestoreEntity):
         duration_dict: dict[int, int] = {}
 
         for lb_id, lb_data in self.litter_boxes.items():
-            if 'statisticInfo' in lb_data.statistics:
+            if "statisticInfo" in lb_data.statistics:
                 try:
-                    final_idx = max(index for index, stat in enumerate(lb_data.statistics['statisticInfo']) if stat['petId'] == self.pet_data.id)
+                    final_idx = max(
+                        index
+                        for index, stat in enumerate(
+                            lb_data.statistics["statisticInfo"]
+                        )
+                        if stat["petId"] == self.pet_data.id
+                    )
                 # Handle if the pet didn't use the litter box
                 except ValueError:
                     continue
                 else:
-                    last_stat = lb_data.statistics['statisticInfo'][final_idx]
-                    duration = last_stat['petTotalTime']
-                    time = last_stat['xTime']
+                    last_stat = lb_data.statistics["statisticInfo"][final_idx]
+                    duration = last_stat["petTotalTime"]
+                    time = last_stat["xTime"]
                     duration_dict[time] = duration
         sorted_dict = dict(sorted(duration_dict.items()))
         return sorted_dict
@@ -2529,17 +2593,17 @@ class PuraAirBattery(CoordinatorEntity, SensorEntity):
 
         return {
             "identifiers": {(DOMAIN, self.lb_data.id)},
-            "name": self.lb_data.device_detail['name'],
+            "name": self.lb_data.device_detail["name"],
             "manufacturer": "PetKit",
             "model": LITTER_BOXES[self.lb_data.type],
-            "sw_version": f'{self.lb_data.device_detail["firmware"]}'
+            "sw_version": f'{self.lb_data.device_detail["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.lb_data.id) + '_pura_air_battery'
+        return str(self.lb_data.id) + "_pura_air_battery"
 
     @property
     def has_entity_name(self) -> bool:
@@ -2557,7 +2621,7 @@ class PuraAirBattery(CoordinatorEntity, SensorEntity):
     def native_value(self) -> int:
         """Return current battery percentage."""
 
-        return self.lb_data.device_detail['k3Device']['battery']
+        return self.lb_data.device_detail["k3Device"]["battery"]
 
     @property
     def native_unit_of_measurement(self) -> str:
@@ -2567,7 +2631,7 @@ class PuraAirBattery(CoordinatorEntity, SensorEntity):
 
     @property
     def device_class(self) -> SensorDeviceClass:
-        """ Return entity device class """
+        """Return entity device class"""
 
         return SensorDeviceClass.BATTERY
 
@@ -2591,7 +2655,7 @@ class PuraAirBattery(CoordinatorEntity, SensorEntity):
         device associated.
         """
 
-        if 'k3Device' in self.lb_data.device_detail:
+        if "k3Device" in self.lb_data.device_detail:
             return True
         else:
             return False
@@ -2616,17 +2680,17 @@ class PuraAirLiquid(CoordinatorEntity, SensorEntity):
 
         return {
             "identifiers": {(DOMAIN, self.lb_data.id)},
-            "name": self.lb_data.device_detail['name'],
+            "name": self.lb_data.device_detail["name"],
             "manufacturer": "PetKit",
             "model": LITTER_BOXES[self.lb_data.type],
-            "sw_version": f'{self.lb_data.device_detail["firmware"]}'
+            "sw_version": f'{self.lb_data.device_detail["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.lb_data.id) + '_pura_air_liquid'
+        return str(self.lb_data.id) + "_pura_air_liquid"
 
     @property
     def has_entity_name(self) -> bool:
@@ -2644,7 +2708,7 @@ class PuraAirLiquid(CoordinatorEntity, SensorEntity):
     def native_value(self) -> int:
         """Return current liquid left."""
 
-        return self.lb_data.device_detail['k3Device']['liquid']
+        return self.lb_data.device_detail["k3Device"]["liquid"]
 
     @property
     def native_unit_of_measurement(self) -> str:
@@ -2668,7 +2732,7 @@ class PuraAirLiquid(CoordinatorEntity, SensorEntity):
     def icon(self) -> str:
         """Return icon for entity."""
 
-        return 'mdi:cup'
+        return "mdi:cup"
 
     @property
     def available(self) -> bool:
@@ -2678,7 +2742,7 @@ class PuraAirLiquid(CoordinatorEntity, SensorEntity):
         device associated.
         """
 
-        if 'k3Device' in self.lb_data.device_detail:
+        if "k3Device" in self.lb_data.device_detail:
             return True
         else:
             return False
@@ -2704,17 +2768,17 @@ class MAXLastEvent(CoordinatorEntity, SensorEntity):
 
         return {
             "identifiers": {(DOMAIN, self.lb_data.id)},
-            "name": self.lb_data.device_detail['name'],
+            "name": self.lb_data.device_detail["name"],
             "manufacturer": "PetKit",
             "model": LITTER_BOXES[self.lb_data.type],
-            "sw_version": f'{self.lb_data.device_detail["firmware"]}'
+            "sw_version": f'{self.lb_data.device_detail["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.lb_data.id) + '_max_last_event'
+        return str(self.lb_data.id) + "_max_last_event"
 
     @property
     def has_entity_name(self) -> bool:
@@ -2734,28 +2798,28 @@ class MAXLastEvent(CoordinatorEntity, SensorEntity):
 
         if self.lb_data.device_record:
             last_record = self.lb_data.device_record[-1]
-            if last_record['subContent']:
-                self.sub_events = self.sub_events_to_description(last_record['subContent'])
+            if last_record["subContent"]:
+                self.sub_events = self.sub_events_to_description(
+                    last_record["subContent"]
+                )
             else:
-                self.sub_events = 'no_sub_events'
-            event = self.result_to_description(last_record['eventType'], last_record)
+                self.sub_events = "no_sub_events"
+            event = self.result_to_description(last_record["eventType"], last_record)
             return event
         else:
-            return 'no_events_yet'
+            return "no_events_yet"
 
     @property
     def extra_state_attributes(self):
         """Return sub events associated with the main event."""
 
-        return {
-            'sub_events': self.sub_events
-        }
+        return {"sub_events": self.sub_events}
 
     @property
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:calendar'
+        return "mdi:calendar"
 
     @property
     def entity_category(self) -> EntityCategory:
@@ -2768,30 +2832,32 @@ class MAXLastEvent(CoordinatorEntity, SensorEntity):
 
         # Make sure event_type is valid
         if event_type not in MAX_EVENT_TYPES:
-            return 'event_type_unknown'
+            return "event_type_unknown"
 
         # Pet out events don't have result or reason
         if event_type != 10:
-            result = record['content']['result']
-            if 'startReason' in record['content']:
-                reason = record['content']['startReason']
+            result = record["content"]["result"]
+            if "startReason" in record["content"]:
+                reason = record["content"]["startReason"]
 
             if event_type == 5:
                 if result == 2:
-                    if 'error' in record['content']:
-                        error = record['content']['error']
+                    if "error" in record["content"]:
+                        error = record["content"]["error"]
                     else:
                         return MAX_EVENT_TYPE_NAMED[event_type]
 
                     try:
-                        description = MAX_EVENT_DESCRIPTION[event_type][result][reason][error]
+                        description = MAX_EVENT_DESCRIPTION[event_type][result][reason][
+                            error
+                        ]
                     except KeyError:
                         if reason == 0:
-                            return 'auto_cleaning_failed_other'
+                            return "auto_cleaning_failed_other"
                         elif reason == 1:
-                            return 'scheduled_cleaning_failed_other'
+                            return "scheduled_cleaning_failed_other"
                         else:
-                            return 'manual_cleaning_failed_other'
+                            return "manual_cleaning_failed_other"
                     return description
 
                 else:
@@ -2803,8 +2869,8 @@ class MAXLastEvent(CoordinatorEntity, SensorEntity):
 
             if event_type in [6, 7]:
                 if result == 2:
-                    if 'error' in record['content']:
-                        error = record['content']['error']
+                    if "error" in record["content"]:
+                        error = record["content"]["error"]
                     else:
                         return MAX_EVENT_TYPE_NAMED[event_type]
 
@@ -2812,9 +2878,9 @@ class MAXLastEvent(CoordinatorEntity, SensorEntity):
                         description = MAX_EVENT_DESCRIPTION[event_type][result][error]
                     except KeyError:
                         if event_type == 6:
-                            return 'litter_empty_failed_other'
+                            return "litter_empty_failed_other"
                         else:
-                            return 'reset_failed_other'
+                            return "reset_failed_other"
                     return description
 
                 else:
@@ -2827,7 +2893,7 @@ class MAXLastEvent(CoordinatorEntity, SensorEntity):
             if event_type == 8:
                 try:
                     if result == 9:
-                        return 'cat_stopped_odor'
+                        return "cat_stopped_odor"
                     else:
                         description = MAX_EVENT_DESCRIPTION[event_type][result][reason]
                 except KeyError:
@@ -2842,18 +2908,18 @@ class MAXLastEvent(CoordinatorEntity, SensorEntity):
                 return description
 
         if event_type == 10:
-            if (record['petId'] == '-2') or (record['petId'] == '-1'):
-                name = 'Unknown'
+            if (record["petId"] == "-2") or (record["petId"] == "-1"):
+                name = "Unknown"
             else:
-                name = record['petName']
-            return f'{name} used the litter box'
+                name = record["petName"]
+            return f"{name} used the litter box"
 
     def sub_events_to_description(self, sub_events: list[dict[str, Any]]) -> list[str]:
         """Create a list containing all the sub-events associated with an event to be used as attribute"""
 
         event_list: list[str] = []
         for event in sub_events:
-            description = self.result_to_description(event['eventType'], event)
+            description = self.result_to_description(event["eventType"], event)
             event_list.append(description)
         return event_list
 
@@ -2878,17 +2944,17 @@ class MAXWorkState(CoordinatorEntity, SensorEntity):
 
         return {
             "identifiers": {(DOMAIN, self.lb_data.id)},
-            "name": self.lb_data.device_detail['name'],
+            "name": self.lb_data.device_detail["name"],
             "manufacturer": "PetKit",
             "model": LITTER_BOXES[self.lb_data.type],
-            "sw_version": f'{self.lb_data.device_detail["firmware"]}'
+            "sw_version": f'{self.lb_data.device_detail["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.lb_data.id) + '_max_work_state'
+        return str(self.lb_data.id) + "_max_work_state"
 
     @property
     def has_entity_name(self) -> bool:
@@ -2906,143 +2972,143 @@ class MAXWorkState(CoordinatorEntity, SensorEntity):
     def native_value(self) -> str:
         """Return current litter box work state from device_detail."""
 
-        if 'workState' in self.lb_data.device_detail['state']:
-            work_state = self.lb_data.device_detail['state']['workState']
+        if "workState" in self.lb_data.device_detail["state"]:
+            work_state = self.lb_data.device_detail["state"]["workState"]
 
-            if work_state['workMode'] == 0:
-                work_process = work_state['workProcess']
+            if work_state["workMode"] == 0:
+                work_process = work_state["workProcess"]
                 if work_process / 10 == 1:
-                    return 'cleaning_litter_box'
+                    return "cleaning_litter_box"
                 elif int(floor((work_process / 10))) == 2:
                     if work_process % 10 == 2:
-                        if 'safeWarn' in work_state:
-                            if work_state['safeWarn'] != 0:
-                                if work_state['safeWarn'] == 1:
-                                    return 'cleaning_paused_pet_entered'
+                        if "safeWarn" in work_state:
+                            if work_state["safeWarn"] != 0:
+                                if work_state["safeWarn"] == 1:
+                                    return "cleaning_paused_pet_entered"
                                 else:
-                                    return 'cleaning_paused_system_error'
-                            if work_state['safeWarn'] == 0:
+                                    return "cleaning_paused_system_error"
+                            if work_state["safeWarn"] == 0:
                                 ### petInTime could be referring to key in state and not workState
-                                if work_state['petInTime'] == 0:
-                                    return 'cleaning_paused_pet_approach'
+                                if work_state["petInTime"] == 0:
+                                    return "cleaning_paused_pet_approach"
                                 else:
-                                    return 'cleaning_paused_pet_using'
+                                    return "cleaning_paused_pet_using"
                     else:
-                        return 'cleaning_litter_box_paused'
+                        return "cleaning_litter_box_paused"
                 elif work_process / 10 == 3:
-                    return 'resetting_device'
+                    return "resetting_device"
                 elif int(floor((work_process / 10))) == 4:
                     if work_process % 10 == 2:
-                        if 'safeWarn' in work_state:
-                            if work_state['safeWarn'] != 0:
-                                if work_state['safeWarn'] == 1:
-                                    return 'paused_pet_entered'
+                        if "safeWarn" in work_state:
+                            if work_state["safeWarn"] != 0:
+                                if work_state["safeWarn"] == 1:
+                                    return "paused_pet_entered"
                                 else:
-                                    return 'paused_system_error'
-                            if work_state['safeWarn'] == 0:
+                                    return "paused_system_error"
+                            if work_state["safeWarn"] == 0:
                                 ### petInTime could be referring to key in state and not workState
-                                if work_state['petInTime'] == 0:
-                                    return 'paused_pet_approach'
+                                if work_state["petInTime"] == 0:
+                                    return "paused_pet_approach"
                                 else:
-                                    return 'paused_pet_using'
+                                    return "paused_pet_using"
                     else:
-                        return 'litter_box_paused'
+                        return "litter_box_paused"
                 else:
-                    return 'cleaning_litter_box'
-            if work_state['workMode'] == 1:
-                work_process = work_state['workProcess']
+                    return "cleaning_litter_box"
+            if work_state["workMode"] == 1:
+                work_process = work_state["workProcess"]
                 if work_process / 10 == 1:
-                    return 'dumping_litter'
+                    return "dumping_litter"
                 if int(floor((work_process / 10))) == 2:
                     if work_process % 10 == 2:
-                        if 'safeWarn' in work_state:
-                            if work_state['safeWarn'] != 0:
-                                if work_state['safeWarn'] == 1:
-                                    return 'dumping_paused_pet_entered'
+                        if "safeWarn" in work_state:
+                            if work_state["safeWarn"] != 0:
+                                if work_state["safeWarn"] == 1:
+                                    return "dumping_paused_pet_entered"
                                 else:
-                                    return 'dumping_paused_system_error'
-                            if work_state['safeWarn'] == 0:
+                                    return "dumping_paused_system_error"
+                            if work_state["safeWarn"] == 0:
                                 ### petInTime could be referring to key in state and not workState
-                                if work_state['petInTime'] == 0:
-                                    return 'dumping_paused_pet_approach'
+                                if work_state["petInTime"] == 0:
+                                    return "dumping_paused_pet_approach"
                                 else:
-                                    return 'dumping_paused_pet_using'
+                                    return "dumping_paused_pet_using"
                     else:
-                        return 'dumping_litter_paused'
+                        return "dumping_litter_paused"
                 if work_process / 10 == 3:
-                    return 'resetting_device'
+                    return "resetting_device"
                 if int(floor((work_process / 10))) == 4:
                     if work_process % 10 == 2:
-                        if 'safeWarn' in work_state:
-                            if work_state['safeWarn'] != 0:
-                                if work_state['safeWarn'] == 1:
-                                    return 'paused_pet_entered'
+                        if "safeWarn" in work_state:
+                            if work_state["safeWarn"] != 0:
+                                if work_state["safeWarn"] == 1:
+                                    return "paused_pet_entered"
                                 else:
-                                    return 'paused_system_error'
-                            if work_state['safeWarn'] == 0:
+                                    return "paused_system_error"
+                            if work_state["safeWarn"] == 0:
                                 ### petInTime could be referring to key in state and not workState
-                                if work_state['petInTime'] == 0:
-                                    return 'paused_pet_approach'
+                                if work_state["petInTime"] == 0:
+                                    return "paused_pet_approach"
                                 else:
-                                    return 'paused_pet_using'
+                                    return "paused_pet_using"
                     else:
-                        return 'litter_box_paused'
-            if work_state['workMode'] == 3:
-                return 'resetting'
-            if work_state['workMode'] == 4:
-                return 'leveling'
-            if work_state['workMode'] == 5:
-                return 'calibrating'
-            if work_state['workMode'] == 9:
-                work_process = work_state['workProcess']
+                        return "litter_box_paused"
+            if work_state["workMode"] == 3:
+                return "resetting"
+            if work_state["workMode"] == 4:
+                return "leveling"
+            if work_state["workMode"] == 5:
+                return "calibrating"
+            if work_state["workMode"] == 9:
+                work_process = work_state["workProcess"]
                 if work_process / 10 == 1:
-                    return 'maintenance_mode'
+                    return "maintenance_mode"
                 if int(floor((work_process / 10))) == 2:
                     if work_process % 10 == 2:
-                        if 'safeWarn' in work_state:
-                            if work_state['safeWarn'] != 0:
-                                if work_state['safeWarn'] == 1:
-                                    return 'maintenance_paused_pet_entered'
-                                elif work_state['safeWarn'] == 3:
-                                    return 'maintenance_paused_cover'
+                        if "safeWarn" in work_state:
+                            if work_state["safeWarn"] != 0:
+                                if work_state["safeWarn"] == 1:
+                                    return "maintenance_paused_pet_entered"
+                                elif work_state["safeWarn"] == 3:
+                                    return "maintenance_paused_cover"
                                 else:
-                                    return 'maintenance_paused_system_error'
-                            if work_state['safeWarn'] == 0:
+                                    return "maintenance_paused_system_error"
+                            if work_state["safeWarn"] == 0:
                                 ### petInTime could be referring to key in state and not workState
-                                if work_state['petInTime'] == 0:
-                                    return 'maintenance_paused_pet_approach'
+                                if work_state["petInTime"] == 0:
+                                    return "maintenance_paused_pet_approach"
                                 else:
-                                    return 'maintenance_paused_pet_using'
+                                    return "maintenance_paused_pet_using"
                     else:
-                        return 'maintenance_paused'
+                        return "maintenance_paused"
                 if work_process / 10 == 3:
-                    return 'exit_maintenance'
+                    return "exit_maintenance"
                 if int(floor((work_process / 10))) == 4:
                     if work_process % 10 == 2:
-                        if 'safeWarn' in work_state:
-                            if work_state['safeWarn'] != 0:
-                                if work_state['safeWarn'] == 1:
-                                    return 'maintenance_exit_paused_pet_entered'
-                                elif work_state['safeWarn'] == 3:
-                                    return 'maintenance_exit_paused_cover'
+                        if "safeWarn" in work_state:
+                            if work_state["safeWarn"] != 0:
+                                if work_state["safeWarn"] == 1:
+                                    return "maintenance_exit_paused_pet_entered"
+                                elif work_state["safeWarn"] == 3:
+                                    return "maintenance_exit_paused_cover"
                                 else:
-                                    return 'maintenance_exit_paused_system_error'
-                            if work_state['safeWarn'] == 0:
+                                    return "maintenance_exit_paused_system_error"
+                            if work_state["safeWarn"] == 0:
                                 ### petInTime could be referring to key in state and not workState
-                                if work_state['petInTime'] == 0:
-                                    return 'maintenance_exit_paused_pet_approach'
+                                if work_state["petInTime"] == 0:
+                                    return "maintenance_exit_paused_pet_approach"
                                 else:
-                                    return 'maintenance_exit_paused_pet_using'
+                                    return "maintenance_exit_paused_pet_using"
                     else:
-                        return 'maintenance_exit_paused'
+                        return "maintenance_exit_paused"
         else:
-            return 'idle'
+            return "idle"
 
     @property
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:account-hard-hat'
+        return "mdi:account-hard-hat"
 
     @property
     def entity_category(self) -> EntityCategory:
@@ -3070,17 +3136,17 @@ class AvgEatingTime(CoordinatorEntity, SensorEntity):
 
         return {
             "identifiers": {(DOMAIN, self.feeder_data.id)},
-            "name": self.feeder_data.data['name'],
+            "name": self.feeder_data.data["name"],
             "manufacturer": "PetKit",
             "model": FEEDERS[self.feeder_data.type],
-            "sw_version": f'{self.feeder_data.data["firmware"]}'
+            "sw_version": f'{self.feeder_data.data["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.feeder_data.id) + '_avg_eating_time'
+        return str(self.feeder_data.id) + "_avg_eating_time"
 
     @property
     def has_entity_name(self) -> bool:
@@ -3098,7 +3164,7 @@ class AvgEatingTime(CoordinatorEntity, SensorEntity):
     def native_value(self) -> int:
         """Return average eating time."""
 
-        return self.feeder_data.data['state']['feedState']['eatAvg']
+        return self.feeder_data.data["state"]["feedState"]["eatAvg"]
 
     @property
     def native_unit_of_measurement(self) -> UnitOfTime:
@@ -3122,7 +3188,7 @@ class AvgEatingTime(CoordinatorEntity, SensorEntity):
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:clock-digital'
+        return "mdi:clock-digital"
 
 
 class ManualDispensedHopper1(CoordinatorEntity, SensorEntity):
@@ -3144,17 +3210,17 @@ class ManualDispensedHopper1(CoordinatorEntity, SensorEntity):
 
         return {
             "identifiers": {(DOMAIN, self.feeder_data.id)},
-            "name": self.feeder_data.data['name'],
+            "name": self.feeder_data.data["name"],
             "manufacturer": "PetKit",
             "model": FEEDERS[self.feeder_data.type],
-            "sw_version": f'{self.feeder_data.data["firmware"]}'
+            "sw_version": f'{self.feeder_data.data["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.feeder_data.id) + '_manual_dispensed_hopp_1'
+        return str(self.feeder_data.id) + "_manual_dispensed_hopp_1"
 
     @property
     def has_entity_name(self) -> bool:
@@ -3172,7 +3238,7 @@ class ManualDispensedHopper1(CoordinatorEntity, SensorEntity):
     def native_value(self) -> int:
         """Return total manually dispensed."""
 
-        return self.feeder_data.data['state']['feedState']['addAmountTotal1']
+        return self.feeder_data.data["state"]["feedState"]["addAmountTotal1"]
 
     @property
     def state_class(self) -> SensorStateClass:
@@ -3190,7 +3256,7 @@ class ManualDispensedHopper1(CoordinatorEntity, SensorEntity):
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:food-drumstick'
+        return "mdi:food-drumstick"
 
 
 class ManualDispensedHopper2(CoordinatorEntity, SensorEntity):
@@ -3212,17 +3278,17 @@ class ManualDispensedHopper2(CoordinatorEntity, SensorEntity):
 
         return {
             "identifiers": {(DOMAIN, self.feeder_data.id)},
-            "name": self.feeder_data.data['name'],
+            "name": self.feeder_data.data["name"],
             "manufacturer": "PetKit",
             "model": FEEDERS[self.feeder_data.type],
-            "sw_version": f'{self.feeder_data.data["firmware"]}'
+            "sw_version": f'{self.feeder_data.data["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.feeder_data.id) + '_manual_dispensed_hopp_2'
+        return str(self.feeder_data.id) + "_manual_dispensed_hopp_2"
 
     @property
     def has_entity_name(self) -> bool:
@@ -3240,7 +3306,7 @@ class ManualDispensedHopper2(CoordinatorEntity, SensorEntity):
     def native_value(self) -> int:
         """Return total manually dispensed."""
 
-        return self.feeder_data.data['state']['feedState']['addAmountTotal2']
+        return self.feeder_data.data["state"]["feedState"]["addAmountTotal2"]
 
     @property
     def state_class(self) -> SensorStateClass:
@@ -3258,7 +3324,8 @@ class ManualDispensedHopper2(CoordinatorEntity, SensorEntity):
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:food-drumstick'
+        return "mdi:food-drumstick"
+
 
 class TotalPlannedHopper1(CoordinatorEntity, SensorEntity):
     """Representation of feeder total planned to be dispensed from hopper 1."""
@@ -3279,17 +3346,17 @@ class TotalPlannedHopper1(CoordinatorEntity, SensorEntity):
 
         return {
             "identifiers": {(DOMAIN, self.feeder_data.id)},
-            "name": self.feeder_data.data['name'],
+            "name": self.feeder_data.data["name"],
             "manufacturer": "PetKit",
             "model": FEEDERS[self.feeder_data.type],
-            "sw_version": f'{self.feeder_data.data["firmware"]}'
+            "sw_version": f'{self.feeder_data.data["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.feeder_data.id) + '_total_planned_hopp_1'
+        return str(self.feeder_data.id) + "_total_planned_hopp_1"
 
     @property
     def has_entity_name(self) -> bool:
@@ -3307,7 +3374,7 @@ class TotalPlannedHopper1(CoordinatorEntity, SensorEntity):
     def native_value(self) -> int:
         """Return total planned."""
 
-        return self.feeder_data.data['state']['feedState']['planAmountTotal1']
+        return self.feeder_data.data["state"]["feedState"]["planAmountTotal1"]
 
     @property
     def state_class(self) -> SensorStateClass:
@@ -3325,7 +3392,7 @@ class TotalPlannedHopper1(CoordinatorEntity, SensorEntity):
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:food-drumstick'
+        return "mdi:food-drumstick"
 
 
 class TotalPlannedHopper2(CoordinatorEntity, SensorEntity):
@@ -3347,17 +3414,17 @@ class TotalPlannedHopper2(CoordinatorEntity, SensorEntity):
 
         return {
             "identifiers": {(DOMAIN, self.feeder_data.id)},
-            "name": self.feeder_data.data['name'],
+            "name": self.feeder_data.data["name"],
             "manufacturer": "PetKit",
             "model": FEEDERS[self.feeder_data.type],
-            "sw_version": f'{self.feeder_data.data["firmware"]}'
+            "sw_version": f'{self.feeder_data.data["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.feeder_data.id) + '_total_planned_hopp_2'
+        return str(self.feeder_data.id) + "_total_planned_hopp_2"
 
     @property
     def has_entity_name(self) -> bool:
@@ -3375,7 +3442,7 @@ class TotalPlannedHopper2(CoordinatorEntity, SensorEntity):
     def native_value(self) -> int:
         """Return total planned."""
 
-        return self.feeder_data.data['state']['feedState']['planAmountTotal2']
+        return self.feeder_data.data["state"]["feedState"]["planAmountTotal2"]
 
     @property
     def state_class(self) -> SensorStateClass:
@@ -3393,7 +3460,7 @@ class TotalPlannedHopper2(CoordinatorEntity, SensorEntity):
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:food-drumstick'
+        return "mdi:food-drumstick"
 
 
 class PlannedDispensedHopper1(CoordinatorEntity, SensorEntity):
@@ -3415,17 +3482,17 @@ class PlannedDispensedHopper1(CoordinatorEntity, SensorEntity):
 
         return {
             "identifiers": {(DOMAIN, self.feeder_data.id)},
-            "name": self.feeder_data.data['name'],
+            "name": self.feeder_data.data["name"],
             "manufacturer": "PetKit",
             "model": FEEDERS[self.feeder_data.type],
-            "sw_version": f'{self.feeder_data.data["firmware"]}'
+            "sw_version": f'{self.feeder_data.data["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.feeder_data.id) + '_planned_dispensed_hopp_1'
+        return str(self.feeder_data.id) + "_planned_dispensed_hopp_1"
 
     @property
     def has_entity_name(self) -> bool:
@@ -3443,7 +3510,7 @@ class PlannedDispensedHopper1(CoordinatorEntity, SensorEntity):
     def native_value(self) -> int:
         """Return total planned dispensed."""
 
-        return self.feeder_data.data['state']['feedState']['planRealAmountTotal1']
+        return self.feeder_data.data["state"]["feedState"]["planRealAmountTotal1"]
 
     @property
     def state_class(self) -> SensorStateClass:
@@ -3461,7 +3528,7 @@ class PlannedDispensedHopper1(CoordinatorEntity, SensorEntity):
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:food-drumstick'
+        return "mdi:food-drumstick"
 
 
 class PlannedDispensedHopper2(CoordinatorEntity, SensorEntity):
@@ -3483,17 +3550,17 @@ class PlannedDispensedHopper2(CoordinatorEntity, SensorEntity):
 
         return {
             "identifiers": {(DOMAIN, self.feeder_data.id)},
-            "name": self.feeder_data.data['name'],
+            "name": self.feeder_data.data["name"],
             "manufacturer": "PetKit",
             "model": FEEDERS[self.feeder_data.type],
-            "sw_version": f'{self.feeder_data.data["firmware"]}'
+            "sw_version": f'{self.feeder_data.data["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.feeder_data.id) + '_planned_dispensed_hopp_2'
+        return str(self.feeder_data.id) + "_planned_dispensed_hopp_2"
 
     @property
     def has_entity_name(self) -> bool:
@@ -3511,7 +3578,7 @@ class PlannedDispensedHopper2(CoordinatorEntity, SensorEntity):
     def native_value(self) -> int:
         """Return total planned dispensed."""
 
-        return self.feeder_data.data['state']['feedState']['planRealAmountTotal2']
+        return self.feeder_data.data["state"]["feedState"]["planRealAmountTotal2"]
 
     @property
     def state_class(self) -> SensorStateClass:
@@ -3529,7 +3596,7 @@ class PlannedDispensedHopper2(CoordinatorEntity, SensorEntity):
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:food-drumstick'
+        return "mdi:food-drumstick"
 
 
 class TotalDispensedHopper1(CoordinatorEntity, SensorEntity):
@@ -3551,17 +3618,17 @@ class TotalDispensedHopper1(CoordinatorEntity, SensorEntity):
 
         return {
             "identifiers": {(DOMAIN, self.feeder_data.id)},
-            "name": self.feeder_data.data['name'],
+            "name": self.feeder_data.data["name"],
             "manufacturer": "PetKit",
             "model": FEEDERS[self.feeder_data.type],
-            "sw_version": f'{self.feeder_data.data["firmware"]}'
+            "sw_version": f'{self.feeder_data.data["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.feeder_data.id) + '_total_dispensed_hopp_1'
+        return str(self.feeder_data.id) + "_total_dispensed_hopp_1"
 
     @property
     def has_entity_name(self) -> bool:
@@ -3579,7 +3646,7 @@ class TotalDispensedHopper1(CoordinatorEntity, SensorEntity):
     def native_value(self) -> int:
         """Return total dispensed."""
 
-        return self.feeder_data.data['state']['feedState']['realAmountTotal1']
+        return self.feeder_data.data["state"]["feedState"]["realAmountTotal1"]
 
     @property
     def state_class(self) -> SensorStateClass:
@@ -3597,7 +3664,7 @@ class TotalDispensedHopper1(CoordinatorEntity, SensorEntity):
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:food-drumstick'
+        return "mdi:food-drumstick"
 
 
 class TotalDispensedHopper2(CoordinatorEntity, SensorEntity):
@@ -3619,17 +3686,17 @@ class TotalDispensedHopper2(CoordinatorEntity, SensorEntity):
 
         return {
             "identifiers": {(DOMAIN, self.feeder_data.id)},
-            "name": self.feeder_data.data['name'],
+            "name": self.feeder_data.data["name"],
             "manufacturer": "PetKit",
             "model": FEEDERS[self.feeder_data.type],
-            "sw_version": f'{self.feeder_data.data["firmware"]}'
+            "sw_version": f'{self.feeder_data.data["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.feeder_data.id) + '_total_dispensed_hopp_2'
+        return str(self.feeder_data.id) + "_total_dispensed_hopp_2"
 
     @property
     def has_entity_name(self) -> bool:
@@ -3647,7 +3714,7 @@ class TotalDispensedHopper2(CoordinatorEntity, SensorEntity):
     def native_value(self) -> int:
         """Return total dispensed."""
 
-        return self.feeder_data.data['state']['feedState']['realAmountTotal2']
+        return self.feeder_data.data["state"]["feedState"]["realAmountTotal2"]
 
     @property
     def state_class(self) -> SensorStateClass:
@@ -3665,7 +3732,7 @@ class TotalDispensedHopper2(CoordinatorEntity, SensorEntity):
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:food-drumstick'
+        return "mdi:food-drumstick"
 
 
 class PurifierError(CoordinatorEntity, SensorEntity):
@@ -3687,17 +3754,17 @@ class PurifierError(CoordinatorEntity, SensorEntity):
 
         return {
             "identifiers": {(DOMAIN, self.purifier_data.id)},
-            "name": self.purifier_data.device_detail['name'],
+            "name": self.purifier_data.device_detail["name"],
             "manufacturer": "PetKit",
             "model": PURIFIERS[self.purifier_data.type],
-            "sw_version": f'{self.purifier_data.device_detail["firmware"]}'
+            "sw_version": f'{self.purifier_data.device_detail["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.purifier_data.id) + '_purifier_error'
+        return str(self.purifier_data.id) + "_purifier_error"
 
     @property
     def has_entity_name(self) -> bool:
@@ -3715,10 +3782,10 @@ class PurifierError(CoordinatorEntity, SensorEntity):
     def native_value(self) -> str:
         """Return current error if there is one."""
 
-        if 'errorMsg' in self.purifier_data.device_detail['state']:
-            return self.purifier_data.device_detail['state']['errorMsg']
+        if "errorMsg" in self.purifier_data.device_detail["state"]:
+            return self.purifier_data.device_detail["state"]["errorMsg"]
         else:
-            return 'no_error'
+            return "no_error"
 
     @property
     def entity_category(self) -> EntityCategory:
@@ -3730,11 +3797,11 @@ class PurifierError(CoordinatorEntity, SensorEntity):
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:alert-circle'
+        return "mdi:alert-circle"
 
 
 class PurifierHumidity(CoordinatorEntity, SensorEntity):
-    """ Representation of Purifier Humidity """
+    """Representation of Purifier Humidity"""
 
     def __init__(self, coordinator, purifier_id):
         super().__init__(coordinator)
@@ -3752,17 +3819,17 @@ class PurifierHumidity(CoordinatorEntity, SensorEntity):
 
         return {
             "identifiers": {(DOMAIN, self.purifier_data.id)},
-            "name": self.purifier_data.device_detail['name'],
+            "name": self.purifier_data.device_detail["name"],
             "manufacturer": "PetKit",
             "model": PURIFIERS[self.purifier_data.type],
-            "sw_version": f'{self.purifier_data.device_detail["firmware"]}'
+            "sw_version": f'{self.purifier_data.device_detail["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.purifier_data.id) + '_purifier_humidity'
+        return str(self.purifier_data.id) + "_purifier_humidity"
 
     @property
     def has_entity_name(self) -> bool:
@@ -3778,31 +3845,31 @@ class PurifierHumidity(CoordinatorEntity, SensorEntity):
 
     @property
     def native_value(self) -> int:
-        """ Return current humidity """
+        """Return current humidity"""
 
-        return round((self.purifier_data.device_detail['state']['humidity'] / 10))
+        return round((self.purifier_data.device_detail["state"]["humidity"] / 10))
 
     @property
     def native_unit_of_measurement(self) -> str:
-        """ Return percent as the native unit """
+        """Return percent as the native unit"""
 
         return PERCENTAGE
 
     @property
     def device_class(self) -> SensorDeviceClass:
-        """ Return entity device class """
+        """Return entity device class"""
 
         return SensorDeviceClass.HUMIDITY
 
     @property
     def state_class(self) -> SensorStateClass:
-        """ Return the type of state class """
+        """Return the type of state class"""
 
         return SensorStateClass.MEASUREMENT
 
 
 class PurifierTemperature(CoordinatorEntity, SensorEntity):
-    """ Representation of Purifier Temperature """
+    """Representation of Purifier Temperature"""
 
     def __init__(self, coordinator, purifier_id):
         super().__init__(coordinator)
@@ -3820,17 +3887,17 @@ class PurifierTemperature(CoordinatorEntity, SensorEntity):
 
         return {
             "identifiers": {(DOMAIN, self.purifier_data.id)},
-            "name": self.purifier_data.device_detail['name'],
+            "name": self.purifier_data.device_detail["name"],
             "manufacturer": "PetKit",
             "model": PURIFIERS[self.purifier_data.type],
-            "sw_version": f'{self.purifier_data.device_detail["firmware"]}'
+            "sw_version": f'{self.purifier_data.device_detail["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.purifier_data.id) + '_purifier_temperature'
+        return str(self.purifier_data.id) + "_purifier_temperature"
 
     @property
     def has_entity_name(self) -> bool:
@@ -3846,31 +3913,31 @@ class PurifierTemperature(CoordinatorEntity, SensorEntity):
 
     @property
     def native_value(self) -> int:
-        """ Return current temperature in Celsius """
+        """Return current temperature in Celsius"""
 
-        return round((self.purifier_data.device_detail['state']['temp'] / 10))
+        return round((self.purifier_data.device_detail["state"]["temp"] / 10))
 
     @property
     def native_unit_of_measurement(self) -> UnitOfTemperature:
-        """ Return Celsius as the native unit """
+        """Return Celsius as the native unit"""
 
         return UnitOfTemperature.CELSIUS
 
     @property
     def device_class(self) -> SensorDeviceClass:
-        """ Return entity device class """
+        """Return entity device class"""
 
         return SensorDeviceClass.TEMPERATURE
 
     @property
     def state_class(self) -> SensorStateClass:
-        """ Return the type of state class """
+        """Return the type of state class"""
 
         return SensorStateClass.MEASUREMENT
 
 
 class AirPurified(CoordinatorEntity, SensorEntity):
-    """ Representation of amount of air purified."""
+    """Representation of amount of air purified."""
 
     def __init__(self, coordinator, purifier_id):
         super().__init__(coordinator)
@@ -3888,17 +3955,17 @@ class AirPurified(CoordinatorEntity, SensorEntity):
 
         return {
             "identifiers": {(DOMAIN, self.purifier_data.id)},
-            "name": self.purifier_data.device_detail['name'],
+            "name": self.purifier_data.device_detail["name"],
             "manufacturer": "PetKit",
             "model": PURIFIERS[self.purifier_data.type],
-            "sw_version": f'{self.purifier_data.device_detail["firmware"]}'
+            "sw_version": f'{self.purifier_data.device_detail["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.purifier_data.id) + '_air_purified'
+        return str(self.purifier_data.id) + "_air_purified"
 
     @property
     def has_entity_name(self) -> bool:
@@ -3916,23 +3983,23 @@ class AirPurified(CoordinatorEntity, SensorEntity):
     def native_value(self) -> int:
         """Return amount of air purified in cubic meters."""
 
-        return round(self.purifier_data.device_detail['state']['refresh'])
+        return round(self.purifier_data.device_detail["state"]["refresh"])
 
     @property
     def native_unit_of_measurement(self) -> UnitOfVolume:
-        """ Return cubic meters as the native unit """
+        """Return cubic meters as the native unit"""
 
         return UnitOfVolume.CUBIC_METERS
 
     @property
     def device_class(self) -> SensorDeviceClass:
-        """ Return entity device class """
+        """Return entity device class"""
 
         return SensorDeviceClass.VOLUME
 
     @property
     def state_class(self) -> SensorStateClass:
-        """ Return the type of state class """
+        """Return the type of state class"""
 
         return SensorStateClass.TOTAL
 
@@ -3956,17 +4023,17 @@ class PurifierRSSI(CoordinatorEntity, SensorEntity):
 
         return {
             "identifiers": {(DOMAIN, self.purifier_data.id)},
-            "name": self.purifier_data.device_detail['name'],
+            "name": self.purifier_data.device_detail["name"],
             "manufacturer": "PetKit",
             "model": PURIFIERS[self.purifier_data.type],
-            "sw_version": f'{self.purifier_data.device_detail["firmware"]}'
+            "sw_version": f'{self.purifier_data.device_detail["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.purifier_data.id) + '_rssi'
+        return str(self.purifier_data.id) + "_rssi"
 
     @property
     def has_entity_name(self) -> bool:
@@ -3984,7 +4051,7 @@ class PurifierRSSI(CoordinatorEntity, SensorEntity):
     def native_value(self) -> int:
         """Return RSSI measurement."""
 
-        return self.purifier_data.device_detail['state']['wifi']['rsq']
+        return self.purifier_data.device_detail["state"]["wifi"]["rsq"]
 
     @property
     def state_class(self) -> SensorStateClass:
@@ -4014,7 +4081,7 @@ class PurifierRSSI(CoordinatorEntity, SensorEntity):
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:wifi'
+        return "mdi:wifi"
 
 
 class PurifierLiquid(CoordinatorEntity, SensorEntity):
@@ -4036,17 +4103,17 @@ class PurifierLiquid(CoordinatorEntity, SensorEntity):
 
         return {
             "identifiers": {(DOMAIN, self.purifier_data.id)},
-            "name": self.purifier_data.device_detail['name'],
+            "name": self.purifier_data.device_detail["name"],
             "manufacturer": "PetKit",
             "model": PURIFIERS[self.purifier_data.type],
-            "sw_version": f'{self.purifier_data.device_detail["firmware"]}'
+            "sw_version": f'{self.purifier_data.device_detail["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.purifier_data.id) + '_liquid'
+        return str(self.purifier_data.id) + "_liquid"
 
     @property
     def has_entity_name(self) -> bool:
@@ -4064,13 +4131,13 @@ class PurifierLiquid(CoordinatorEntity, SensorEntity):
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:cup-water'
+        return "mdi:cup-water"
 
     @property
     def native_value(self) -> int:
         """Return current percentage left"""
 
-        return self.purifier_data.device_detail['state']['liquid']
+        return self.purifier_data.device_detail["state"]["liquid"]
 
     @property
     def entity_category(self) -> EntityCategory:
@@ -4110,17 +4177,17 @@ class FoodLeft(CoordinatorEntity, SensorEntity):
 
         return {
             "identifiers": {(DOMAIN, self.feeder_data.id)},
-            "name": self.feeder_data.data['name'],
+            "name": self.feeder_data.data["name"],
             "manufacturer": "PetKit",
             "model": FEEDERS[self.feeder_data.type],
-            "sw_version": f'{self.feeder_data.data["firmware"]}'
+            "sw_version": f'{self.feeder_data.data["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.feeder_data.id) + '_food_left'
+        return str(self.feeder_data.id) + "_food_left"
 
     @property
     def has_entity_name(self) -> bool:
@@ -4138,13 +4205,13 @@ class FoodLeft(CoordinatorEntity, SensorEntity):
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:food-drumstick'
+        return "mdi:food-drumstick"
 
     @property
     def native_value(self) -> int:
         """Return current percentage left"""
 
-        return self.feeder_data.data['state']['percent']
+        return self.feeder_data.data["state"]["percent"]
 
     @property
     def entity_category(self) -> EntityCategory:
@@ -4279,7 +4346,7 @@ class EndDateCarePlusSubscription(CoordinatorEntity, SensorEntity):
     def native_value(self) -> str:
         """Return the end date of Care Plus subscription."""
         timestamp = self.feeder_data.data["cloudProduct"]["workIndate"]
-        return datetime.utcfromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
+        return datetime.utcfromtimestamp(timestamp).strftime("%Y-%m-%d %H:%M:%S")
 
     @property
     def icon(self) -> str:
@@ -4304,16 +4371,16 @@ class LBStatus(CoordinatorEntity, SensorEntity):
         """Return device registry information for this entity."""
         return {
             "identifiers": {(DOMAIN, self.lb_data.id)},
-            "name": self.lb_data.device_detail['name'],
+            "name": self.lb_data.device_detail["name"],
             "manufacturer": "PetKit",
             "model": LITTER_BOXES[self.lb_data.type],
-            "sw_version": f'{self.lb_data.device_detail["firmware"]}'
+            "sw_version": f'{self.lb_data.device_detail["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
-        return str(self.lb_data.id) + '_status'
+        return str(self.lb_data.id) + "_status"
 
     @property
     def has_entity_name(self) -> bool:
@@ -4328,11 +4395,11 @@ class LBStatus(CoordinatorEntity, SensorEntity):
     @property
     def native_value(self) -> str | None:
         """Return status of the litter box."""
-        pim = self.lb_data.device_detail['state']['pim']
+        pim = self.lb_data.device_detail["state"]["pim"]
         if pim == 0:
-            return 'offline'
+            return "offline"
         elif pim == 1:
-            return 'normal'
+            return "normal"
         else:
             return None
 
@@ -4344,11 +4411,11 @@ class LBStatus(CoordinatorEntity, SensorEntity):
     @property
     def icon(self) -> str | None:
         """Set status icon."""
-        pim = self.lb_data.device_detail['state']['pim']
+        pim = self.lb_data.device_detail["state"]["pim"]
         if pim == 0:
-            return 'mdi:cloud-off'
+            return "mdi:cloud-off"
         elif pim == 1:
-            return 'mdi:cloud'
+            return "mdi:cloud"
         else:
             return None
 
@@ -4372,17 +4439,17 @@ class TimesVisited(CoordinatorEntity, SensorEntity):
 
         return {
             "identifiers": {(DOMAIN, self.feeder_data.id)},
-            "name": self.feeder_data.data['name'],
+            "name": self.feeder_data.data["name"],
             "manufacturer": "PetKit",
             "model": FEEDERS[self.feeder_data.type],
-            "sw_version": f'{self.feeder_data.data["firmware"]}'
+            "sw_version": f'{self.feeder_data.data["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.feeder_data.id) + '_times_visited'
+        return str(self.feeder_data.id) + "_times_visited"
 
     @property
     def has_entity_name(self) -> bool:
@@ -4399,9 +4466,9 @@ class TimesVisited(CoordinatorEntity, SensorEntity):
     @property
     def native_value(self) -> int:
         """Return total times eaten."""
-        pet_records = self.feeder_data.device_record.get('pet', [])
-        if pet_records and 'items' in pet_records[0]:
-            return len(pet_records[0]['items'])
+        pet_records = self.feeder_data.device_record.get("pet", [])
+        if pet_records and "items" in pet_records[0]:
+            return len(pet_records[0]["items"])
         return 0
 
     @property
@@ -4420,7 +4487,7 @@ class TimesVisited(CoordinatorEntity, SensorEntity):
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:counter'
+        return "mdi:counter"
 
 
 class FeederRawPlanData(CoordinatorEntity, SensorEntity):
@@ -4440,16 +4507,16 @@ class FeederRawPlanData(CoordinatorEntity, SensorEntity):
         """Return device registry information for this entity."""
         return {
             "identifiers": {(DOMAIN, self.feeder_data.id)},
-            "name": self.feeder_data.data['name'],
+            "name": self.feeder_data.data["name"],
             "manufacturer": "PetKit",
             "model": FEEDERS[self.feeder_data.type],
-            "sw_version": f'{self.feeder_data.data["firmware"]}'
+            "sw_version": f'{self.feeder_data.data["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
-        return str(self.feeder_data.id) + '_raw_feed_plan_data'
+        return str(self.feeder_data.id) + "_raw_feed_plan_data"
 
     @property
     def has_entity_name(self) -> bool:
@@ -4465,7 +4532,7 @@ class FeederRawPlanData(CoordinatorEntity, SensorEntity):
     def native_value(self) -> str | None:
         """Return the raw plan dispense of the last food dispensed."""
         result = []
-        feed_records = self.feeder_data.device_record.get('feed', [])
+        feed_records = self.feeder_data.device_record.get("feed", [])
         for feed in feed_records:
             items = feed.get("items", [])
             for idx, item in enumerate(items):
@@ -4476,7 +4543,7 @@ class FeederRawPlanData(CoordinatorEntity, SensorEntity):
                 amount1 = item.get("amount1", 0)
                 amount2 = item.get("amount2", 0)
                 amount = amount1 + amount2
-                state = 255 # By default, we assume that the food is pending
+                state = 255  # By default, we assume that the food is pending
                 if "state" in item:
                     err_code = item["state"].get("errCode", 1)
                     if err_code == 0:
@@ -4499,7 +4566,7 @@ class FeederRawPlanData(CoordinatorEntity, SensorEntity):
     @property
     def icon(self) -> str | None:
         """Set icon for the last dispensed food."""
-        return 'mdi:calendar-month'
+        return "mdi:calendar-month"
 
 
 class EversweetBattery(CoordinatorEntity, SensorEntity):
@@ -4521,17 +4588,23 @@ class EversweetBattery(CoordinatorEntity, SensorEntity):
 
         return {
             "identifiers": {(DOMAIN, self.wf_data.id)},
-            "name": self.wf_data.data['name'],
+            "name": self.wf_data.data["name"],
             "manufacturer": "PetKit",
-            "model": WATER_FOUNTAINS.get(self.wf_data.data["typeCode"], "Unidentified Water Fountain") if "typeCode" in self.wf_data.data else "Unidentified Water Fountain",
-            "sw_version": f'{self.wf_data.data["hardware"]}.{self.wf_data.data["firmware"]}'
+            "model": (
+                WATER_FOUNTAINS.get(
+                    self.wf_data.data["typeCode"], "Unidentified Water Fountain"
+                )
+                if "typeCode" in self.wf_data.data
+                else "Unidentified Water Fountain"
+            ),
+            "sw_version": f'{self.wf_data.data["hardware"]}.{self.wf_data.data["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.wf_data.id) + '_fountain_battery'
+        return str(self.wf_data.id) + "_fountain_battery"
 
     @property
     def has_entity_name(self) -> bool:
@@ -4549,7 +4622,7 @@ class EversweetBattery(CoordinatorEntity, SensorEntity):
     def native_value(self) -> int:
         """Return current battery percentage."""
 
-        return self.wf_data.data['electricity']['batteryPercent']
+        return self.wf_data.data["electricity"]["batteryPercent"]
 
     @property
     def native_unit_of_measurement(self) -> str:
@@ -4559,7 +4632,7 @@ class EversweetBattery(CoordinatorEntity, SensorEntity):
 
     @property
     def device_class(self) -> SensorDeviceClass:
-        """ Return entity device class """
+        """Return entity device class"""
 
         return SensorDeviceClass.BATTERY
 

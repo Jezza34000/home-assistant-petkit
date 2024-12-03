@@ -1,4 +1,5 @@
 """Button platform for PetKit integration."""
+
 from __future__ import annotations
 
 from typing import Any
@@ -25,82 +26,82 @@ async def async_setup_entry(
 ) -> None:
     """Set Up PetKit Button Entities."""
 
-    coordinator: PetKitDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id][PETKIT_COORDINATOR]
+    coordinator: PetKitDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id][
+        PETKIT_COORDINATOR
+    ]
 
     buttons = []
 
     for wf_id, wf_data in coordinator.data.water_fountains.items():
         # Water Fountains (W5)
         if wf_data.ble_relay:
-            buttons.append(
-                WFResetFilter(coordinator, wf_id)
-            )
+            buttons.append(WFResetFilter(coordinator, wf_id))
 
     for feeder_id, feeder_data in coordinator.data.feeders.items():
         # All Feeders
-        buttons.append(
-            ResetDesiccant(coordinator, feeder_id)
-        )
+        buttons.append(ResetDesiccant(coordinator, feeder_id))
 
         # D3, D4, D4s and D4sh
-        if feeder_data.type in ['d3', 'd4', 'd4s', 'd4sh', 'feeder']:
-            buttons.append(
-                CancelManualFeed(coordinator, feeder_id)
-            )
+        if feeder_data.type in ["d3", "d4", "d4s", "d4sh", "feeder"]:
+            buttons.append(CancelManualFeed(coordinator, feeder_id))
 
         # D3
-        if feeder_data.type == 'd3':
-            buttons.append(
-                CallPet(coordinator, feeder_id)
-            )
+        if feeder_data.type == "d3":
+            buttons.append(CallPet(coordinator, feeder_id))
 
         # D4s
-        if feeder_data.type in ['d4s', 'd4sh']:
-            buttons.append(
-                FoodReplenished(coordinator, feeder_id)
-            )
+        if feeder_data.type in ["d4s", "d4sh"]:
+            buttons.append(FoodReplenished(coordinator, feeder_id))
 
         # Fresh Element
-        if feeder_data.type == 'feeder':
-            buttons.extend((
-                StartFeederCal(coordinator, feeder_id),
-                StopFeederCal(coordinator, feeder_id)
-            ))
+        if feeder_data.type == "feeder":
+            buttons.extend(
+                (
+                    StartFeederCal(coordinator, feeder_id),
+                    StopFeederCal(coordinator, feeder_id),
+                )
+            )
 
     # Litter boxes
     for lb_id, lb_data in coordinator.data.litter_boxes.items():
         # Pura X & Pura MAX
-        if lb_data.type in ['t3', 't4', 't6']:
-            buttons.extend((
-                LBStartCleaning(coordinator, lb_id),
-                LBPauseCleaning(coordinator, lb_id)
-            ))
-        # Pura X & Pura MAX with Pura Air
-        if (lb_data.type == 't3') or ('k3Device' in lb_data.device_detail):
-            buttons.extend((
-                LBOdorRemoval(coordinator, lb_id),
-                LBResetDeodorizer(coordinator, lb_id)
-            ))
-        # Purobot ULTRA
-        if lb_data.type in  ['t4', 't6']:
-            buttons.extend((
-                DeodorizerReset(coordinator, lb_id),
-                MAXDumpLitter(coordinator, lb_id),
-                MAXPauseDumping(coordinator, lb_id),
-                MAXResumeDumping(coordinator, lb_id)
-            ))
-        if lb_data.type == 't4':
-            buttons.extend((
-                MAXStartMaint(coordinator, lb_id),
-                MAXExitMaint(coordinator, lb_id),
-                MAXPauseExitMaint(coordinator, lb_id),
-                MAXResumeExitMaint(coordinator, lb_id)
-            ))
-        # Pura MAX / Pura MAX 2 with Pura Air
-        if 'k3Device' in lb_data.device_detail:
-            buttons.append(
-                MAXLightOn(coordinator, lb_id)
+        if lb_data.type in ["t3", "t4", "t6"]:
+            buttons.extend(
+                (
+                    LBStartCleaning(coordinator, lb_id),
+                    LBPauseCleaning(coordinator, lb_id),
+                )
             )
+        # Pura X & Pura MAX with Pura Air
+        if (lb_data.type == "t3") or ("k3Device" in lb_data.device_detail):
+            buttons.extend(
+                (
+                    LBOdorRemoval(coordinator, lb_id),
+                    LBResetDeodorizer(coordinator, lb_id),
+                )
+            )
+        # Purobot ULTRA
+        if lb_data.type in ["t4", "t6"]:
+            buttons.extend(
+                (
+                    DeodorizerReset(coordinator, lb_id),
+                    MAXDumpLitter(coordinator, lb_id),
+                    MAXPauseDumping(coordinator, lb_id),
+                    MAXResumeDumping(coordinator, lb_id),
+                )
+            )
+        if lb_data.type == "t4":
+            buttons.extend(
+                (
+                    MAXStartMaint(coordinator, lb_id),
+                    MAXExitMaint(coordinator, lb_id),
+                    MAXPauseExitMaint(coordinator, lb_id),
+                    MAXResumeExitMaint(coordinator, lb_id),
+                )
+            )
+        # Pura MAX / Pura MAX 2 with Pura Air
+        if "k3Device" in lb_data.device_detail:
+            buttons.append(MAXLightOn(coordinator, lb_id))
 
     async_add_entities(buttons)
 
@@ -124,17 +125,23 @@ class WFResetFilter(CoordinatorEntity, ButtonEntity):
 
         return {
             "identifiers": {(DOMAIN, self.wf_data.id)},
-            "name": self.wf_data.data['name'],
+            "name": self.wf_data.data["name"],
             "manufacturer": "PetKit",
-            "model": WATER_FOUNTAINS.get(self.wf_data.data["typeCode"], "Unidentified Water Fountain") if "typeCode" in self.wf_data.data else "Unidentified Water Fountain",
-            "sw_version": f'{self.wf_data.data["hardware"]}.{self.wf_data.data["firmware"]}'
+            "model": (
+                WATER_FOUNTAINS.get(
+                    self.wf_data.data["typeCode"], "Unidentified Water Fountain"
+                )
+                if "typeCode" in self.wf_data.data
+                else "Unidentified Water Fountain"
+            ),
+            "sw_version": f'{self.wf_data.data["hardware"]}.{self.wf_data.data["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.wf_data.id) + '_reset_filter'
+        return str(self.wf_data.id) + "_reset_filter"
 
     @property
     def has_entity_name(self) -> bool:
@@ -171,11 +178,15 @@ class WFResetFilter(CoordinatorEntity, ButtonEntity):
         """Handle the button press."""
 
         try:
-            await self.coordinator.client.control_water_fountain(self.wf_data, FountainCommand.RESET_FILTER)
+            await self.coordinator.client.control_water_fountain(
+                self.wf_data, FountainCommand.RESET_FILTER
+            )
         except BluetoothError:
-            raise PetKitBluetoothError(f'Bluetooth connection to {self.wf_data.data["name"]} failed. Please try resetting filter again.')
+            raise PetKitBluetoothError(
+                f'Bluetooth connection to {self.wf_data.data["name"]} failed. Please try resetting filter again.'
+            )
         else:
-            self.wf_data.data['filterPercent'] = 100
+            self.wf_data.data["filterPercent"] = 100
             self.async_write_ha_state()
             await asyncio.sleep(1)
             await self.coordinator.async_request_refresh()
@@ -200,17 +211,17 @@ class ResetDesiccant(CoordinatorEntity, ButtonEntity):
 
         return {
             "identifiers": {(DOMAIN, self.feeder_data.id)},
-            "name": self.feeder_data.data['name'],
+            "name": self.feeder_data.data["name"],
             "manufacturer": "PetKit",
             "model": FEEDERS[self.feeder_data.type],
-            "sw_version": f'{self.feeder_data.data["firmware"]}'
+            "sw_version": f'{self.feeder_data.data["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.feeder_data.id) + '_reset_desiccant'
+        return str(self.feeder_data.id) + "_reset_desiccant"
 
     @property
     def has_entity_name(self) -> bool:
@@ -228,7 +239,7 @@ class ResetDesiccant(CoordinatorEntity, ButtonEntity):
     def available(self) -> bool:
         """Only make available if device is online."""
 
-        if self.feeder_data.data['state']['pim'] != 0:
+        if self.feeder_data.data["state"]["pim"] != 0:
             return True
         else:
             return False
@@ -238,7 +249,7 @@ class ResetDesiccant(CoordinatorEntity, ButtonEntity):
 
         await self.coordinator.client.reset_feeder_desiccant(self.feeder_data)
 
-        self.feeder_data.data['state']['desiccantLeftDays'] = 30
+        self.feeder_data.data["state"]["desiccantLeftDays"] = 30
         self.async_write_ha_state()
         await self.coordinator.async_request_refresh()
 
@@ -262,17 +273,17 @@ class CancelManualFeed(CoordinatorEntity, ButtonEntity):
 
         return {
             "identifiers": {(DOMAIN, self.feeder_data.id)},
-            "name": self.feeder_data.data['name'],
+            "name": self.feeder_data.data["name"],
             "manufacturer": "PetKit",
             "model": FEEDERS[self.feeder_data.type],
-            "sw_version": f'{self.feeder_data.data["firmware"]}'
+            "sw_version": f'{self.feeder_data.data["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.feeder_data.id) + '_cancel_manual_feed'
+        return str(self.feeder_data.id) + "_cancel_manual_feed"
 
     @property
     def has_entity_name(self) -> bool:
@@ -290,7 +301,7 @@ class CancelManualFeed(CoordinatorEntity, ButtonEntity):
     def available(self) -> bool:
         """Only make available if device is online."""
 
-        if self.feeder_data.data['state']['pim'] != 0:
+        if self.feeder_data.data["state"]["pim"] != 0:
             return True
         else:
             return False
@@ -321,17 +332,17 @@ class CallPet(CoordinatorEntity, ButtonEntity):
 
         return {
             "identifiers": {(DOMAIN, self.feeder_data.id)},
-            "name": self.feeder_data.data['name'],
+            "name": self.feeder_data.data["name"],
             "manufacturer": "PetKit",
             "model": FEEDERS[self.feeder_data.type],
-            "sw_version": f'{self.feeder_data.data["firmware"]}'
+            "sw_version": f'{self.feeder_data.data["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.feeder_data.id) + '_call_pet'
+        return str(self.feeder_data.id) + "_call_pet"
 
     @property
     def has_entity_name(self) -> bool:
@@ -349,7 +360,7 @@ class CallPet(CoordinatorEntity, ButtonEntity):
     def available(self) -> bool:
         """Only make available if device is online."""
 
-        if self.feeder_data.data['state']['pim'] != 0:
+        if self.feeder_data.data["state"]["pim"] != 0:
             return True
         else:
             return False
@@ -380,17 +391,17 @@ class LBStartCleaning(CoordinatorEntity, ButtonEntity):
 
         return {
             "identifiers": {(DOMAIN, self.lb_data.id)},
-            "name": self.lb_data.device_detail['name'],
+            "name": self.lb_data.device_detail["name"],
             "manufacturer": "PetKit",
             "model": LITTER_BOXES[self.lb_data.type],
-            "sw_version": f'{self.lb_data.device_detail["firmware"]}'
+            "sw_version": f'{self.lb_data.device_detail["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.lb_data.id) + '_start_cleaning'
+        return str(self.lb_data.id) + "_start_cleaning"
 
     @property
     def has_entity_name(self) -> bool:
@@ -408,14 +419,14 @@ class LBStartCleaning(CoordinatorEntity, ButtonEntity):
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:vacuum'
+        return "mdi:vacuum"
 
     @property
     def available(self) -> bool:
         """Only make available if device is online and on."""
 
-        lb_online = self.lb_data.device_detail['state']['pim'] == 1
-        lb_power_on = self.lb_data.device_detail['state']['power'] == 1
+        lb_online = self.lb_data.device_detail["state"]["pim"] == 1
+        lb_power_on = self.lb_data.device_detail["state"]["power"] == 1
 
         if lb_online and lb_power_on:
             return True
@@ -425,7 +436,9 @@ class LBStartCleaning(CoordinatorEntity, ButtonEntity):
     async def async_press(self) -> None:
         """Handle the button press."""
 
-        await self.coordinator.client.control_litter_box(self.lb_data, LitterBoxCommand.START_CLEAN)
+        await self.coordinator.client.control_litter_box(
+            self.lb_data, LitterBoxCommand.START_CLEAN
+        )
         await asyncio.sleep(1.5)
         await self.coordinator.async_request_refresh()
 
@@ -449,17 +462,17 @@ class LBPauseCleaning(CoordinatorEntity, ButtonEntity):
 
         return {
             "identifiers": {(DOMAIN, self.lb_data.id)},
-            "name": self.lb_data.device_detail['name'],
+            "name": self.lb_data.device_detail["name"],
             "manufacturer": "PetKit",
             "model": LITTER_BOXES[self.lb_data.type],
-            "sw_version": f'{self.lb_data.device_detail["firmware"]}'
+            "sw_version": f'{self.lb_data.device_detail["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.lb_data.id) + '_pause_cleaning'
+        return str(self.lb_data.id) + "_pause_cleaning"
 
     @property
     def has_entity_name(self) -> bool:
@@ -477,14 +490,14 @@ class LBPauseCleaning(CoordinatorEntity, ButtonEntity):
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:pause'
+        return "mdi:pause"
 
     @property
     def available(self) -> bool:
         """Only make available if device is online and on."""
 
-        lb_online = self.lb_data.device_detail['state']['pim'] == 1
-        lb_power_on = self.lb_data.device_detail['state']['power'] == 1
+        lb_online = self.lb_data.device_detail["state"]["pim"] == 1
+        lb_power_on = self.lb_data.device_detail["state"]["power"] == 1
 
         if lb_online and lb_power_on:
             return True
@@ -494,7 +507,9 @@ class LBPauseCleaning(CoordinatorEntity, ButtonEntity):
     async def async_press(self) -> None:
         """Handle the button press."""
 
-        await self.coordinator.client.control_litter_box(self.lb_data, LitterBoxCommand.PAUSE_CLEAN)
+        await self.coordinator.client.control_litter_box(
+            self.lb_data, LitterBoxCommand.PAUSE_CLEAN
+        )
         await asyncio.sleep(1.5)
         await self.coordinator.async_request_refresh()
 
@@ -518,17 +533,17 @@ class LBOdorRemoval(CoordinatorEntity, ButtonEntity):
 
         return {
             "identifiers": {(DOMAIN, self.lb_data.id)},
-            "name": self.lb_data.device_detail['name'],
+            "name": self.lb_data.device_detail["name"],
             "manufacturer": "PetKit",
             "model": LITTER_BOXES[self.lb_data.type],
-            "sw_version": f'{self.lb_data.device_detail["firmware"]}'
+            "sw_version": f'{self.lb_data.device_detail["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.lb_data.id) + '_odor_removal'
+        return str(self.lb_data.id) + "_odor_removal"
 
     @property
     def has_entity_name(self) -> bool:
@@ -546,18 +561,18 @@ class LBOdorRemoval(CoordinatorEntity, ButtonEntity):
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:scent'
+        return "mdi:scent"
 
     @property
     def available(self) -> bool:
         """Only make available if device is online and on."""
 
-        lb_online = self.lb_data.device_detail['state']['pim'] == 1
-        lb_power_on = self.lb_data.device_detail['state']['power'] == 1
+        lb_online = self.lb_data.device_detail["state"]["pim"] == 1
+        lb_power_on = self.lb_data.device_detail["state"]["power"] == 1
 
         # Pura Air deodorizer
-        if self.lb_data.type == 't4':
-            if 'k3Device' in self.lb_data.device_detail:
+        if self.lb_data.type == "t4":
+            if "k3Device" in self.lb_data.device_detail:
                 if lb_online and lb_power_on:
                     return True
                 else:
@@ -574,7 +589,9 @@ class LBOdorRemoval(CoordinatorEntity, ButtonEntity):
     async def async_press(self) -> None:
         """Handle the button press."""
 
-        await self.coordinator.client.control_litter_box(self.lb_data, LitterBoxCommand.ODOR_REMOVAL)
+        await self.coordinator.client.control_litter_box(
+            self.lb_data, LitterBoxCommand.ODOR_REMOVAL
+        )
         await asyncio.sleep(1.5)
         await self.coordinator.async_request_refresh()
 
@@ -598,17 +615,17 @@ class LBResetDeodorizer(CoordinatorEntity, ButtonEntity):
 
         return {
             "identifiers": {(DOMAIN, self.lb_data.id)},
-            "name": self.lb_data.device_detail['name'],
+            "name": self.lb_data.device_detail["name"],
             "manufacturer": "PetKit",
             "model": LITTER_BOXES[self.lb_data.type],
-            "sw_version": f'{self.lb_data.device_detail["firmware"]}'
+            "sw_version": f'{self.lb_data.device_detail["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.lb_data.id) + '_reset_deodorizer'
+        return str(self.lb_data.id) + "_reset_deodorizer"
 
     @property
     def has_entity_name(self) -> bool:
@@ -621,7 +638,7 @@ class LBResetDeodorizer(CoordinatorEntity, ButtonEntity):
         """Translation key for this entity."""
 
         # Pura MAX
-        if self.lb_data.type == 't4':
+        if self.lb_data.type == "t4":
             return "reset_pura_air_liquid"
         # Pura X
         else:
@@ -632,22 +649,22 @@ class LBResetDeodorizer(CoordinatorEntity, ButtonEntity):
         """Set icon."""
 
         # Pura MAX
-        if self.lb_data.type == 't4':
-            return 'mdi:cup'
+        if self.lb_data.type == "t4":
+            return "mdi:cup"
         # Pura X
         else:
-            return 'mdi:scent'
+            return "mdi:scent"
 
     @property
     def available(self) -> bool:
         """Only make available if device is online and on."""
 
-        lb_online = self.lb_data.device_detail['state']['pim'] == 1
-        lb_power_on = self.lb_data.device_detail['state']['power'] == 1
+        lb_online = self.lb_data.device_detail["state"]["pim"] == 1
+        lb_power_on = self.lb_data.device_detail["state"]["power"] == 1
 
         # Pura Air deodorizer
-        if self.lb_data.type == 't4':
-            if 'k3Device' in self.lb_data.device_detail:
+        if self.lb_data.type == "t4":
+            if "k3Device" in self.lb_data.device_detail:
                 if lb_online and lb_power_on:
                     return True
                 else:
@@ -665,11 +682,15 @@ class LBResetDeodorizer(CoordinatorEntity, ButtonEntity):
         """Handle the button press."""
 
         # Pura MAX
-        if self.lb_data.type == 't4':
-            await self.coordinator.client.control_litter_box(self.lb_data, LitterBoxCommand.RESET_MAX_DEODOR)
+        if self.lb_data.type == "t4":
+            await self.coordinator.client.control_litter_box(
+                self.lb_data, LitterBoxCommand.RESET_MAX_DEODOR
+            )
         # Pura X:
         else:
-            await self.coordinator.client.control_litter_box(self.lb_data, LitterBoxCommand.RESET_DEODOR)
+            await self.coordinator.client.control_litter_box(
+                self.lb_data, LitterBoxCommand.RESET_DEODOR
+            )
         await self.coordinator.async_request_refresh()
 
 
@@ -692,17 +713,17 @@ class DeodorizerReset(CoordinatorEntity, ButtonEntity):
 
         return {
             "identifiers": {(DOMAIN, self.lb_data.id)},
-            "name": self.lb_data.device_detail['name'],
+            "name": self.lb_data.device_detail["name"],
             "manufacturer": "PetKit",
             "model": LITTER_BOXES[self.lb_data.type],
-            "sw_version": f'{self.lb_data.device_detail["firmware"]}'
+            "sw_version": f'{self.lb_data.device_detail["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.lb_data.id) + '_deodorizer_reset'
+        return str(self.lb_data.id) + "_deodorizer_reset"
 
     @property
     def has_entity_name(self) -> bool:
@@ -720,15 +741,14 @@ class DeodorizerReset(CoordinatorEntity, ButtonEntity):
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:air-filter'
+        return "mdi:air-filter"
 
     @property
     def available(self) -> bool:
         """Only make available if device is online and on."""
 
-        lb_online = self.lb_data.device_detail['state']['pim'] == 1
-        lb_power_on = self.lb_data.device_detail['state']['power'] == 1
-
+        lb_online = self.lb_data.device_detail["state"]["pim"] == 1
+        lb_power_on = self.lb_data.device_detail["state"]["power"] == 1
 
         if lb_online and lb_power_on:
             return True
@@ -761,17 +781,17 @@ class MAXLightOn(CoordinatorEntity, ButtonEntity):
 
         return {
             "identifiers": {(DOMAIN, self.lb_data.id)},
-            "name": self.lb_data.device_detail['name'],
+            "name": self.lb_data.device_detail["name"],
             "manufacturer": "PetKit",
             "model": LITTER_BOXES[self.lb_data.type],
-            "sw_version": f'{self.lb_data.device_detail["firmware"]}'
+            "sw_version": f'{self.lb_data.device_detail["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.lb_data.id) + '_max_light'
+        return str(self.lb_data.id) + "_max_light"
 
     @property
     def has_entity_name(self) -> bool:
@@ -789,19 +809,18 @@ class MAXLightOn(CoordinatorEntity, ButtonEntity):
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:lightbulb-on'
+        return "mdi:lightbulb-on"
 
     @property
     def available(self) -> bool:
         """Only make available if device is online and on."""
 
-        lb_online = self.lb_data.device_detail['state']['pim'] == 1
-        lb_power_on = self.lb_data.device_detail['state']['power'] == 1
-
+        lb_online = self.lb_data.device_detail["state"]["pim"] == 1
+        lb_power_on = self.lb_data.device_detail["state"]["power"] == 1
 
         if lb_online and lb_power_on:
             # Make sure Pura Air is connected
-            if 'k3Device' in self.lb_data.device_detail:
+            if "k3Device" in self.lb_data.device_detail:
                 return True
             else:
                 return False
@@ -811,7 +830,9 @@ class MAXLightOn(CoordinatorEntity, ButtonEntity):
     async def async_press(self) -> None:
         """Handle the button press."""
 
-        await self.coordinator.client.control_litter_box(self.lb_data, LitterBoxCommand.LIGHT_ON)
+        await self.coordinator.client.control_litter_box(
+            self.lb_data, LitterBoxCommand.LIGHT_ON
+        )
         await asyncio.sleep(1.5)
         await self.coordinator.async_request_refresh()
 
@@ -835,17 +856,17 @@ class MAXStartMaint(CoordinatorEntity, ButtonEntity):
 
         return {
             "identifiers": {(DOMAIN, self.lb_data.id)},
-            "name": self.lb_data.device_detail['name'],
+            "name": self.lb_data.device_detail["name"],
             "manufacturer": "PetKit",
             "model": LITTER_BOXES[self.lb_data.type],
-            "sw_version": f'{self.lb_data.device_detail["firmware"]}'
+            "sw_version": f'{self.lb_data.device_detail["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.lb_data.id) + '_start_max_maint'
+        return str(self.lb_data.id) + "_start_max_maint"
 
     @property
     def has_entity_name(self) -> bool:
@@ -863,15 +884,14 @@ class MAXStartMaint(CoordinatorEntity, ButtonEntity):
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:tools'
+        return "mdi:tools"
 
     @property
     def available(self) -> bool:
         """Only make available if device is online and on."""
 
-        lb_online = self.lb_data.device_detail['state']['pim'] == 1
-        lb_power_on = self.lb_data.device_detail['state']['power'] == 1
-
+        lb_online = self.lb_data.device_detail["state"]["pim"] == 1
+        lb_power_on = self.lb_data.device_detail["state"]["power"] == 1
 
         if lb_online and lb_power_on:
             return True
@@ -881,7 +901,9 @@ class MAXStartMaint(CoordinatorEntity, ButtonEntity):
     async def async_press(self) -> None:
         """Handle the button press."""
 
-        await self.coordinator.client.control_litter_box(self.lb_data, LitterBoxCommand.START_MAINTENANCE)
+        await self.coordinator.client.control_litter_box(
+            self.lb_data, LitterBoxCommand.START_MAINTENANCE
+        )
         await asyncio.sleep(1.5)
         await self.coordinator.async_request_refresh()
 
@@ -905,17 +927,17 @@ class MAXExitMaint(CoordinatorEntity, ButtonEntity):
 
         return {
             "identifiers": {(DOMAIN, self.lb_data.id)},
-            "name": self.lb_data.device_detail['name'],
+            "name": self.lb_data.device_detail["name"],
             "manufacturer": "PetKit",
             "model": LITTER_BOXES[self.lb_data.type],
-            "sw_version": f'{self.lb_data.device_detail["firmware"]}'
+            "sw_version": f'{self.lb_data.device_detail["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.lb_data.id) + '_exit_max_maint'
+        return str(self.lb_data.id) + "_exit_max_maint"
 
     @property
     def has_entity_name(self) -> bool:
@@ -933,15 +955,14 @@ class MAXExitMaint(CoordinatorEntity, ButtonEntity):
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:tools'
+        return "mdi:tools"
 
     @property
     def available(self) -> bool:
         """Only make available if device is online and on."""
 
-        lb_online = self.lb_data.device_detail['state']['pim'] == 1
-        lb_power_on = self.lb_data.device_detail['state']['power'] == 1
-
+        lb_online = self.lb_data.device_detail["state"]["pim"] == 1
+        lb_power_on = self.lb_data.device_detail["state"]["power"] == 1
 
         if lb_online and lb_power_on:
             return True
@@ -951,7 +972,9 @@ class MAXExitMaint(CoordinatorEntity, ButtonEntity):
     async def async_press(self) -> None:
         """Handle the button press."""
 
-        await self.coordinator.client.control_litter_box(self.lb_data, LitterBoxCommand.EXIT_MAINTENANCE)
+        await self.coordinator.client.control_litter_box(
+            self.lb_data, LitterBoxCommand.EXIT_MAINTENANCE
+        )
         await asyncio.sleep(1.5)
         await self.coordinator.async_request_refresh()
 
@@ -975,17 +998,17 @@ class MAXPauseExitMaint(CoordinatorEntity, ButtonEntity):
 
         return {
             "identifiers": {(DOMAIN, self.lb_data.id)},
-            "name": self.lb_data.device_detail['name'],
+            "name": self.lb_data.device_detail["name"],
             "manufacturer": "PetKit",
             "model": LITTER_BOXES[self.lb_data.type],
-            "sw_version": f'{self.lb_data.device_detail["firmware"]}'
+            "sw_version": f'{self.lb_data.device_detail["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.lb_data.id) + '_pause_exit_max_maint'
+        return str(self.lb_data.id) + "_pause_exit_max_maint"
 
     @property
     def has_entity_name(self) -> bool:
@@ -1003,15 +1026,14 @@ class MAXPauseExitMaint(CoordinatorEntity, ButtonEntity):
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:tools'
+        return "mdi:tools"
 
     @property
     def available(self) -> bool:
         """Only make available if device is online and on."""
 
-        lb_online = self.lb_data.device_detail['state']['pim'] == 1
-        lb_power_on = self.lb_data.device_detail['state']['power'] == 1
-
+        lb_online = self.lb_data.device_detail["state"]["pim"] == 1
+        lb_power_on = self.lb_data.device_detail["state"]["power"] == 1
 
         if lb_online and lb_power_on:
             return True
@@ -1021,7 +1043,9 @@ class MAXPauseExitMaint(CoordinatorEntity, ButtonEntity):
     async def async_press(self) -> None:
         """Handle the button press."""
 
-        await self.coordinator.client.control_litter_box(self.lb_data, LitterBoxCommand.PAUSE_MAINTENANCE_EXIT)
+        await self.coordinator.client.control_litter_box(
+            self.lb_data, LitterBoxCommand.PAUSE_MAINTENANCE_EXIT
+        )
         await asyncio.sleep(1.5)
         await self.coordinator.async_request_refresh()
 
@@ -1045,17 +1069,17 @@ class MAXResumeExitMaint(CoordinatorEntity, ButtonEntity):
 
         return {
             "identifiers": {(DOMAIN, self.lb_data.id)},
-            "name": self.lb_data.device_detail['name'],
+            "name": self.lb_data.device_detail["name"],
             "manufacturer": "PetKit",
             "model": LITTER_BOXES[self.lb_data.type],
-            "sw_version": f'{self.lb_data.device_detail["firmware"]}'
+            "sw_version": f'{self.lb_data.device_detail["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.lb_data.id) + '_resume_exit_max_maint'
+        return str(self.lb_data.id) + "_resume_exit_max_maint"
 
     @property
     def has_entity_name(self) -> bool:
@@ -1073,15 +1097,14 @@ class MAXResumeExitMaint(CoordinatorEntity, ButtonEntity):
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:tools'
+        return "mdi:tools"
 
     @property
     def available(self) -> bool:
         """Only make available if device is online and on."""
 
-        lb_online = self.lb_data.device_detail['state']['pim'] == 1
-        lb_power_on = self.lb_data.device_detail['state']['power'] == 1
-
+        lb_online = self.lb_data.device_detail["state"]["pim"] == 1
+        lb_power_on = self.lb_data.device_detail["state"]["power"] == 1
 
         if lb_online and lb_power_on:
             return True
@@ -1091,7 +1114,9 @@ class MAXResumeExitMaint(CoordinatorEntity, ButtonEntity):
     async def async_press(self) -> None:
         """Handle the button press."""
 
-        await self.coordinator.client.control_litter_box(self.lb_data, LitterBoxCommand.RESUME_MAINTENANCE_EXIT)
+        await self.coordinator.client.control_litter_box(
+            self.lb_data, LitterBoxCommand.RESUME_MAINTENANCE_EXIT
+        )
         await asyncio.sleep(1.5)
         await self.coordinator.async_request_refresh()
 
@@ -1115,17 +1140,17 @@ class MAXDumpLitter(CoordinatorEntity, ButtonEntity):
 
         return {
             "identifiers": {(DOMAIN, self.lb_data.id)},
-            "name": self.lb_data.device_detail['name'],
+            "name": self.lb_data.device_detail["name"],
             "manufacturer": "PetKit",
             "model": LITTER_BOXES[self.lb_data.type],
-            "sw_version": f'{self.lb_data.device_detail["firmware"]}'
+            "sw_version": f'{self.lb_data.device_detail["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.lb_data.id) + '_dump_litter'
+        return str(self.lb_data.id) + "_dump_litter"
 
     @property
     def has_entity_name(self) -> bool:
@@ -1143,15 +1168,14 @@ class MAXDumpLitter(CoordinatorEntity, ButtonEntity):
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:landslide'
+        return "mdi:landslide"
 
     @property
     def available(self) -> bool:
         """Only make available if device is online and on."""
 
-        lb_online = self.lb_data.device_detail['state']['pim'] == 1
-        lb_power_on = self.lb_data.device_detail['state']['power'] == 1
-
+        lb_online = self.lb_data.device_detail["state"]["pim"] == 1
+        lb_power_on = self.lb_data.device_detail["state"]["power"] == 1
 
         if lb_online and lb_power_on:
             return True
@@ -1161,7 +1185,9 @@ class MAXDumpLitter(CoordinatorEntity, ButtonEntity):
     async def async_press(self) -> None:
         """Handle the button press."""
 
-        await self.coordinator.client.control_litter_box(self.lb_data, LitterBoxCommand.DUMP_LITTER)
+        await self.coordinator.client.control_litter_box(
+            self.lb_data, LitterBoxCommand.DUMP_LITTER
+        )
         await asyncio.sleep(1.5)
         await self.coordinator.async_request_refresh()
 
@@ -1185,17 +1211,17 @@ class MAXPauseDumping(CoordinatorEntity, ButtonEntity):
 
         return {
             "identifiers": {(DOMAIN, self.lb_data.id)},
-            "name": self.lb_data.device_detail['name'],
+            "name": self.lb_data.device_detail["name"],
             "manufacturer": "PetKit",
             "model": LITTER_BOXES[self.lb_data.type],
-            "sw_version": f'{self.lb_data.device_detail["firmware"]}'
+            "sw_version": f'{self.lb_data.device_detail["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.lb_data.id) + '_pause_dump_litter'
+        return str(self.lb_data.id) + "_pause_dump_litter"
 
     @property
     def has_entity_name(self) -> bool:
@@ -1213,15 +1239,14 @@ class MAXPauseDumping(CoordinatorEntity, ButtonEntity):
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:landslide'
+        return "mdi:landslide"
 
     @property
     def available(self) -> bool:
         """Only make available if device is online and on."""
 
-        lb_online = self.lb_data.device_detail['state']['pim'] == 1
-        lb_power_on = self.lb_data.device_detail['state']['power'] == 1
-
+        lb_online = self.lb_data.device_detail["state"]["pim"] == 1
+        lb_power_on = self.lb_data.device_detail["state"]["power"] == 1
 
         if lb_online and lb_power_on:
             return True
@@ -1231,7 +1256,9 @@ class MAXPauseDumping(CoordinatorEntity, ButtonEntity):
     async def async_press(self) -> None:
         """Handle the button press."""
 
-        await self.coordinator.client.control_litter_box(self.lb_data, LitterBoxCommand.PAUSE_LITTER_DUMP)
+        await self.coordinator.client.control_litter_box(
+            self.lb_data, LitterBoxCommand.PAUSE_LITTER_DUMP
+        )
         await asyncio.sleep(1.5)
         await self.coordinator.async_request_refresh()
 
@@ -1255,17 +1282,17 @@ class MAXResumeDumping(CoordinatorEntity, ButtonEntity):
 
         return {
             "identifiers": {(DOMAIN, self.lb_data.id)},
-            "name": self.lb_data.device_detail['name'],
+            "name": self.lb_data.device_detail["name"],
             "manufacturer": "PetKit",
             "model": LITTER_BOXES[self.lb_data.type],
-            "sw_version": f'{self.lb_data.device_detail["firmware"]}'
+            "sw_version": f'{self.lb_data.device_detail["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.lb_data.id) + '_resume_dump_litter'
+        return str(self.lb_data.id) + "_resume_dump_litter"
 
     @property
     def has_entity_name(self) -> bool:
@@ -1283,15 +1310,14 @@ class MAXResumeDumping(CoordinatorEntity, ButtonEntity):
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:landslide'
+        return "mdi:landslide"
 
     @property
     def available(self) -> bool:
         """Only make available if device is online and on."""
 
-        lb_online = self.lb_data.device_detail['state']['pim'] == 1
-        lb_power_on = self.lb_data.device_detail['state']['power'] == 1
-
+        lb_online = self.lb_data.device_detail["state"]["pim"] == 1
+        lb_power_on = self.lb_data.device_detail["state"]["power"] == 1
 
         if lb_online and lb_power_on:
             return True
@@ -1301,7 +1327,9 @@ class MAXResumeDumping(CoordinatorEntity, ButtonEntity):
     async def async_press(self) -> None:
         """Handle the button press."""
 
-        await self.coordinator.client.control_litter_box(self.lb_data, LitterBoxCommand.RESUME_LITTER_DUMP)
+        await self.coordinator.client.control_litter_box(
+            self.lb_data, LitterBoxCommand.RESUME_LITTER_DUMP
+        )
         await asyncio.sleep(1.5)
         await self.coordinator.async_request_refresh()
 
@@ -1325,17 +1353,17 @@ class FoodReplenished(CoordinatorEntity, ButtonEntity):
 
         return {
             "identifiers": {(DOMAIN, self.feeder_data.id)},
-            "name": self.feeder_data.data['name'],
+            "name": self.feeder_data.data["name"],
             "manufacturer": "PetKit",
             "model": FEEDERS[self.feeder_data.type],
-            "sw_version": f'{self.feeder_data.data["firmware"]}'
+            "sw_version": f'{self.feeder_data.data["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.feeder_data.id) + '_food_replenished'
+        return str(self.feeder_data.id) + "_food_replenished"
 
     @property
     def has_entity_name(self) -> bool:
@@ -1353,7 +1381,7 @@ class FoodReplenished(CoordinatorEntity, ButtonEntity):
     def available(self) -> bool:
         """Only make available if device is online."""
 
-        if self.feeder_data.data['state']['pim'] != 0:
+        if self.feeder_data.data["state"]["pim"] != 0:
             return True
         else:
             return False
@@ -1363,8 +1391,8 @@ class FoodReplenished(CoordinatorEntity, ButtonEntity):
 
         await self.coordinator.client.food_replenished(self.feeder_data)
 
-        self.feeder_data.data['state']['food1'] = 1
-        self.feeder_data.data['state']['food2'] = 1
+        self.feeder_data.data["state"]["food1"] = 1
+        self.feeder_data.data["state"]["food2"] = 1
         self.async_write_ha_state()
         await self.coordinator.async_request_refresh()
 
@@ -1388,17 +1416,17 @@ class StartFeederCal(CoordinatorEntity, ButtonEntity):
 
         return {
             "identifiers": {(DOMAIN, self.feeder_data.id)},
-            "name": self.feeder_data.data['name'],
+            "name": self.feeder_data.data["name"],
             "manufacturer": "PetKit",
             "model": FEEDERS[self.feeder_data.type],
-            "sw_version": f'{self.feeder_data.data["firmware"]}'
+            "sw_version": f'{self.feeder_data.data["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.feeder_data.id) + '_start_cal'
+        return str(self.feeder_data.id) + "_start_cal"
 
     @property
     def has_entity_name(self) -> bool:
@@ -1416,7 +1444,7 @@ class StartFeederCal(CoordinatorEntity, ButtonEntity):
     def available(self) -> bool:
         """Only make available if device is online."""
 
-        if self.feeder_data.data['state']['pim'] != 0:
+        if self.feeder_data.data["state"]["pim"] != 0:
             return True
         else:
             return False
@@ -1430,7 +1458,9 @@ class StartFeederCal(CoordinatorEntity, ButtonEntity):
     async def async_press(self) -> None:
         """Handle the button press."""
 
-        await self.coordinator.client.fresh_element_calibration(self.feeder_data, FeederCommand.START_CALIBRATION)
+        await self.coordinator.client.fresh_element_calibration(
+            self.feeder_data, FeederCommand.START_CALIBRATION
+        )
         await self.coordinator.async_request_refresh()
 
 
@@ -1453,17 +1483,17 @@ class StopFeederCal(CoordinatorEntity, ButtonEntity):
 
         return {
             "identifiers": {(DOMAIN, self.feeder_data.id)},
-            "name": self.feeder_data.data['name'],
+            "name": self.feeder_data.data["name"],
             "manufacturer": "PetKit",
             "model": FEEDERS[self.feeder_data.type],
-            "sw_version": f'{self.feeder_data.data["firmware"]}'
+            "sw_version": f'{self.feeder_data.data["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.feeder_data.id) + '_stop_cal'
+        return str(self.feeder_data.id) + "_stop_cal"
 
     @property
     def has_entity_name(self) -> bool:
@@ -1481,7 +1511,7 @@ class StopFeederCal(CoordinatorEntity, ButtonEntity):
     def available(self) -> bool:
         """Only make available if device is online."""
 
-        if self.feeder_data.data['state']['pim'] != 0:
+        if self.feeder_data.data["state"]["pim"] != 0:
             return True
         else:
             return False
@@ -1495,5 +1525,7 @@ class StopFeederCal(CoordinatorEntity, ButtonEntity):
     async def async_press(self) -> None:
         """Handle the button press."""
 
-        await self.coordinator.client.fresh_element_calibration(self.feeder_data, FeederCommand.STOP_CALIBRATION)
+        await self.coordinator.client.fresh_element_calibration(
+            self.feeder_data, FeederCommand.STOP_CALIBRATION
+        )
         await self.coordinator.async_request_refresh()

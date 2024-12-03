@@ -2,6 +2,7 @@
 
 from typing import Any
 
+
 class PetKitBluetoothError(Exception):
     """Bluetooth issue from PetKit api."""
 

@@ -1,4 +1,5 @@
 """Config Flow for PetKit integration."""
+
 from __future__ import annotations
 
 from collections.abc import Mapping
@@ -16,7 +17,14 @@ from homeassistant.helpers import selector
 import homeassistant.helpers.config_validation as cv
 
 from . import LOGGER
-from .const import DEFAULT_NAME, DOMAIN, POLLING_INTERVAL, REGION, REGIONS_LIST, TIMEZONE
+from .const import (
+    DEFAULT_NAME,
+    DOMAIN,
+    POLLING_INTERVAL,
+    REGION,
+    REGIONS_LIST,
+    TIMEZONE,
+)
 from .timezones import TIMEZONES
 from .util import NoDevicesError, async_validate_api
 
@@ -43,12 +51,14 @@ class PetKitConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return await self.async_step_reauth_confirm()
 
     async def async_step_reauth_confirm(
-            self, user_input: dict[str, Any] | None = None
+        self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Confirm re-authentication with PetKit."""
         default_country = pycountry.countries.get(alpha_2=self.hass.config.country).name
         default_tz = self.hass.config.time_zone
-        LOGGER.debug(f'Default country: {default_country}, Default timezone: {default_tz}')
+        LOGGER.debug(
+            f"Default country: {default_country}, Default timezone: {default_tz}"
+        )
         errors: dict[str, str] = {}
 
         if user_input:
@@ -85,7 +95,7 @@ class PetKitConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         REGION: region,
                         TIMEZONE: timezone,
                         POLLING_INTERVAL: self.entry.options[POLLING_INTERVAL],
-                    }
+                    },
                 )
 
                 await self.hass.config_entries.async_reload(self.entry.entry_id)
@@ -100,7 +110,7 @@ class PetKitConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 ),
                 vol.Required(TIMEZONE, default=default_tz): selector.SelectSelector(
                     selector.SelectSelectorConfig(options=TIMEZONES),
-                )
+                ),
             }
         )
 
@@ -111,12 +121,14 @@ class PetKitConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
     async def async_step_user(
-            self, user_input: dict[str, Any] | None = None
+        self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Handle the initial step."""
         default_country = pycountry.countries.get(alpha_2=self.hass.config.country).name
         default_tz = self.hass.config.time_zone
-        LOGGER.debug(f'Default country: {default_country}, Default timezone: {default_tz}')
+        LOGGER.debug(
+            f"Default country: {default_country}, Default timezone: {default_tz}"
+        )
 
         errors: dict[str, str] = {}
 
@@ -148,15 +160,12 @@ class PetKitConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
                 return self.async_create_entry(
                     title=DEFAULT_NAME,
-                    data={
-                        CONF_EMAIL: email,
-                        CONF_PASSWORD: password
-                    },
+                    data={CONF_EMAIL: email, CONF_PASSWORD: password},
                     options={
                         REGION: region,
                         TIMEZONE: timezone,
                         POLLING_INTERVAL: 120,
-                    }
+                    },
                 )
 
         data_schema = vol.Schema(
@@ -168,7 +177,7 @@ class PetKitConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 ),
                 vol.Required(TIMEZONE, default=default_tz): selector.SelectSelector(
                     selector.SelectSelectorConfig(options=TIMEZONES),
-                )
+                ),
             }
         )
 
@@ -180,14 +189,14 @@ class PetKitConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
 
 class PetKitOptionsFlowHandler(config_entries.OptionsFlow):
-    """ Handle PetKit integration options. """
+    """Handle PetKit integration options."""
 
     def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
         """Initialize options flow."""
         self.config_entry = config_entry
 
     async def async_step_init(self, user_input=None):
-        """ Manage options. """
+        """Manage options."""
         return await self.async_step_petkit_options()
 
     async def async_step_petkit_options(self, user_input=None):
@@ -195,7 +204,9 @@ class PetKitOptionsFlowHandler(config_entries.OptionsFlow):
         default_country = pycountry.countries.get(alpha_2=self.hass.config.country).name
         default_tz = self.hass.config.time_zone
 
-        LOGGER.debug(f'Default country: {default_country}, Default timezone: {default_tz}')
+        LOGGER.debug(
+            f"Default country: {default_country}, Default timezone: {default_tz}"
+        )
 
         if user_input is not None:
             return self.async_create_entry(title="", data=user_input)
@@ -203,26 +214,22 @@ class PetKitOptionsFlowHandler(config_entries.OptionsFlow):
         options = {
             vol.Required(
                 REGION,
-                default=self.config_entry.options.get(
-                    REGION, default_country
-                ),
+                default=self.config_entry.options.get(REGION, default_country),
             ): selector.SelectSelector(
-                    selector.SelectSelectorConfig(options=REGIONS_LIST)
+                selector.SelectSelectorConfig(options=REGIONS_LIST)
             ),
             vol.Required(
                 TIMEZONE,
-                default=self.config_entry.options.get(
-                    TIMEZONE, default_tz
-                ),
+                default=self.config_entry.options.get(TIMEZONE, default_tz),
             ): selector.SelectSelector(
-                    selector.SelectSelectorConfig(options=TIMEZONES)
+                selector.SelectSelectorConfig(options=TIMEZONES)
             ),
             vol.Required(
                 POLLING_INTERVAL,
-                default=self.config_entry.options.get(
-                    POLLING_INTERVAL, 120
-                ),
+                default=self.config_entry.options.get(POLLING_INTERVAL, 120),
             ): int,
         }
 
-        return self.async_show_form(step_id="petkit_options", data_schema=vol.Schema(options))
+        return self.async_show_form(
+            step_id="petkit_options", data_schema=vol.Schema(options)
+        )

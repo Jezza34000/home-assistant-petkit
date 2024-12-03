@@ -1,4 +1,5 @@
 """Text platform for PetKit integration."""
+
 from __future__ import annotations
 
 from petkit_api.model import Feeder
@@ -9,11 +10,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import (
-    DOMAIN,
-    FEEDERS,
-    PETKIT_COORDINATOR
-)
+from .const import DOMAIN, FEEDERS, PETKIT_COORDINATOR
 from .coordinator import PetKitDataUpdateCoordinator
 
 
@@ -22,7 +19,9 @@ async def async_setup_entry(
 ) -> None:
     """Set Up PetKit Text Entities."""
 
-    coordinator: PetKitDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id][PETKIT_COORDINATOR]
+    coordinator: PetKitDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id][
+        PETKIT_COORDINATOR
+    ]
 
     text_entities = []
 
@@ -30,10 +29,9 @@ async def async_setup_entry(
 
         # D4s and D4sh Feeder
         if feeder_data.type in ["d4s", "d4sh"]:
-            text_entities.append(
-                ManualFeed(coordinator, feeder_id)
-            )
+            text_entities.append(ManualFeed(coordinator, feeder_id))
     async_add_entities(text_entities)
+
 
 class ManualFeed(CoordinatorEntity, TextEntity):
     """Representation of manual feeding amount selector."""
@@ -54,17 +52,17 @@ class ManualFeed(CoordinatorEntity, TextEntity):
 
         return {
             "identifiers": {(DOMAIN, self.feeder_data.id)},
-            "name": self.feeder_data.data['name'],
+            "name": self.feeder_data.data["name"],
             "manufacturer": "PetKit",
             "model": FEEDERS[self.feeder_data.type],
-            "sw_version": f'{self.feeder_data.data["firmware"]}'
+            "sw_version": f'{self.feeder_data.data["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.feeder_data.id) + '_manual_feed'
+        return str(self.feeder_data.id) + "_manual_feed"
 
     @property
     def has_entity_name(self) -> bool:
@@ -82,13 +80,13 @@ class ManualFeed(CoordinatorEntity, TextEntity):
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:bowl-mix'
+        return "mdi:bowl-mix"
 
     @property
     def available(self) -> bool:
         """Only make available if device is online."""
 
-        if self.feeder_data.data['state']['pim'] != 0:
+        if self.feeder_data.data["state"]["pim"] != 0:
             return True
         else:
             return False
@@ -120,6 +118,8 @@ class ManualFeed(CoordinatorEntity, TextEntity):
     async def async_set_value(self, value: str) -> None:
         """Set manual feeding amount."""
 
-        portions = value.split(',')
-        await self.coordinator.client.dual_hopper_manual_feeding(self.feeder_data, int(portions[0]), int(portions[1]))
+        portions = value.split(",")
+        await self.coordinator.client.dual_hopper_manual_feeding(
+            self.feeder_data, int(portions[0]), int(portions[1])
+        )
         await self.coordinator.async_request_refresh()

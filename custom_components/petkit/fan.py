@@ -1,4 +1,5 @@
 """Fan platform for PetKit integration."""
+
 from __future__ import annotations
 
 from typing import Any
@@ -19,7 +20,7 @@ from .const import (
     PURIFIERS,
     PURIFIER_MODES,
     PURIFIER_MODE_NAMED,
-    PURIFIER_MODE_TO_COMMAND
+    PURIFIER_MODE_TO_COMMAND,
 )
 
 from .coordinator import PetKitDataUpdateCoordinator
@@ -30,14 +31,14 @@ async def async_setup_entry(
 ) -> None:
     """Set Up PetKit Fan Entities."""
 
-    coordinator: PetKitDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id][PETKIT_COORDINATOR]
+    coordinator: PetKitDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id][
+        PETKIT_COORDINATOR
+    ]
 
     fans = []
 
     for purifier_id, purifier_data in coordinator.data.purifiers.items():
-        fans.append(
-            Purifier(coordinator, purifier_id)
-        )
+        fans.append(Purifier(coordinator, purifier_id))
 
     async_add_entities(fans)
 
@@ -65,17 +66,17 @@ class Purifier(CoordinatorEntity, FanEntity):
 
         return {
             "identifiers": {(DOMAIN, self.purifier_data.id)},
-            "name": self.purifier_data.device_detail['name'],
+            "name": self.purifier_data.device_detail["name"],
             "manufacturer": "PetKit",
             "model": PURIFIERS[self.purifier_data.type],
-            "sw_version": f'{self.purifier_data.device_detail["firmware"]}'
+            "sw_version": f'{self.purifier_data.device_detail["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.purifier_data.id) + '_purifier'
+        return str(self.purifier_data.id) + "_purifier"
 
     @property
     def has_entity_name(self) -> bool:
@@ -93,7 +94,7 @@ class Purifier(CoordinatorEntity, FanEntity):
     def available(self) -> bool:
         """Only make available if device is online."""
 
-        if self.purifier_data.device_detail['state']['pim'] != 0:
+        if self.purifier_data.device_detail["state"]["pim"] != 0:
             return True
         else:
             return False
@@ -102,7 +103,7 @@ class Purifier(CoordinatorEntity, FanEntity):
     def is_on(self) -> bool:
         """Determine if the purifier is On."""
 
-        if self.purifier_data.device_detail['state']['power'] in [1,2]:
+        if self.purifier_data.device_detail["state"]["power"] in [1, 2]:
             return True
         else:
             return False
@@ -117,7 +118,7 @@ class Purifier(CoordinatorEntity, FanEntity):
     def preset_mode(self) -> str:
         """Return the current preset mode."""
 
-        mode = self.purifier_data.device_detail['state']['mode']
+        mode = self.purifier_data.device_detail["state"]["mode"]
         return PURIFIER_MODE_NAMED[mode]
 
     @property
@@ -133,8 +134,10 @@ class Purifier(CoordinatorEntity, FanEntity):
     async def async_turn_on(self, **kwargs) -> None:
         """Turn the air purifier on."""
 
-        await self.coordinator.client.control_purifier(self.purifier_data, PurifierCommand.POWER)
-        self.purifier_data.device_detail['state']['power'] = 1
+        await self.coordinator.client.control_purifier(
+            self.purifier_data, PurifierCommand.POWER
+        )
+        self.purifier_data.device_detail["state"]["power"] = 1
         self.async_write_ha_state()
         # Have to wait before refreshing or PetKit will return wrong power state
         await asyncio.sleep(1)
@@ -143,8 +146,10 @@ class Purifier(CoordinatorEntity, FanEntity):
     async def async_turn_off(self, **kwargs) -> None:
         """Turn the air purifier off."""
 
-        await self.coordinator.client.control_purifier(self.purifier_data, PurifierCommand.POWER)
-        self.purifier_data.device_detail['state']['power'] = 0
+        await self.coordinator.client.control_purifier(
+            self.purifier_data, PurifierCommand.POWER
+        )
+        self.purifier_data.device_detail["state"]["power"] = 0
         self.async_write_ha_state()
         # Have to wait before refreshing or PetKit will return wrong power state
         await asyncio.sleep(1)
@@ -157,7 +162,7 @@ class Purifier(CoordinatorEntity, FanEntity):
         await self.coordinator.client.control_purifier(self.purifier_data, command)
         MODE_TO_VALUE = {v: k for (k, v) in PURIFIER_MODE_NAMED.items()}
         value = MODE_TO_VALUE.get(preset_mode)
-        self.purifier_data.device_detail['state']['mode'] = value
+        self.purifier_data.device_detail["state"]["mode"] = value
         # Have to wait before refreshing or PetKit will return wrong mode state
         await asyncio.sleep(1)
         await self.coordinator.async_request_refresh()

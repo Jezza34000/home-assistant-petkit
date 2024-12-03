@@ -1,4 +1,5 @@
 """Number platform for PetKit integration."""
+
 from __future__ import annotations
 
 from typing import Any
@@ -29,48 +30,44 @@ async def async_setup_entry(
 ) -> None:
     """Set Up PetKit Number Entities."""
 
-    coordinator: PetKitDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id][PETKIT_COORDINATOR]
+    coordinator: PetKitDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id][
+        PETKIT_COORDINATOR
+    ]
 
     numbers = []
 
     # Pets
     for pet_id, pet_data in coordinator.data.pets.items():
-        numbers.append(
-            PetWeight(coordinator, pet_id)
-        )
+        numbers.append(PetWeight(coordinator, pet_id))
 
     for feeder_id, feeder_data in coordinator.data.feeders.items():
         # Only D3 Feeder
-        if feeder_data.type == 'd3':
-            numbers.extend((
-                Surplus(coordinator, feeder_id),
-                Volume(coordinator, feeder_id),
-                ManualFeed(coordinator, feeder_id),
-            ))
-
-        # Only D4s Feeder
-        if feeder_data.type == 'd4s':
-            numbers.append(
-                MinEatingDuration(coordinator, feeder_id)
+        if feeder_data.type == "d3":
+            numbers.extend(
+                (
+                    Surplus(coordinator, feeder_id),
+                    Volume(coordinator, feeder_id),
+                    ManualFeed(coordinator, feeder_id),
+                )
             )
 
+        # Only D4s Feeder
+        if feeder_data.type == "d4s":
+            numbers.append(MinEatingDuration(coordinator, feeder_id))
+
         # D4sh Feeder
-        if feeder_data.type == 'd4sh':
+        if feeder_data.type == "d4sh":
             numbers.append(
                 Volume(coordinator, feeder_id),
             )
 
         # Fresh Element Feeder
-        if feeder_data.type == 'feeder':
-            numbers.append(
-                FreshElementManualFeed(coordinator, feeder_id)
-            )
+        if feeder_data.type == "feeder":
+            numbers.append(FreshElementManualFeed(coordinator, feeder_id))
 
     for lb_id, lb_data in coordinator.data.litter_boxes.items():
         # Pura X & Pura MAX
-        numbers.append(
-            LBCleaningDelay(coordinator, lb_id)
-        )
+        numbers.append(LBCleaningDelay(coordinator, lb_id))
 
     async_add_entities(numbers)
 
@@ -94,7 +91,7 @@ class PetWeight(CoordinatorEntity, NumberEntity):
 
         return {
             "identifiers": {(DOMAIN, self.pet_data.id)},
-            "name": self.pet_data.data['name'],
+            "name": self.pet_data.data["name"],
             "manufacturer": "PetKit",
             "model": self.pet_data.type,
         }
@@ -103,7 +100,7 @@ class PetWeight(CoordinatorEntity, NumberEntity):
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return self.pet_data.id + '_set_weight'
+        return self.pet_data.id + "_set_weight"
 
     @property
     def has_entity_name(self) -> bool:
@@ -121,8 +118,8 @@ class PetWeight(CoordinatorEntity, NumberEntity):
     def entity_picture(self) -> str:
         """Grab associated pet picture."""
 
-        if 'avatar' in self.pet_data.data:
-            return self.pet_data.data['avatar']
+        if "avatar" in self.pet_data.data:
+            return self.pet_data.data["avatar"]
         else:
             return None
 
@@ -130,16 +127,16 @@ class PetWeight(CoordinatorEntity, NumberEntity):
     def icon(self) -> str:
         """Set icon if the pet doesn't have an avatar."""
 
-        if 'avatar' in self.pet_data.data:
+        if "avatar" in self.pet_data.data:
             return None
         else:
-            return 'mdi:weight'
+            return "mdi:weight"
 
     @property
     def native_value(self) -> float:
         """Returns current weight."""
 
-        pet_weight = self.pet_data.data['weight']
+        pet_weight = self.pet_data.data["weight"]
         if self.hass.config.units is METRIC_SYSTEM:
             return pet_weight
         else:
@@ -198,7 +195,9 @@ class PetWeight(CoordinatorEntity, NumberEntity):
             converted_value = round(value, 1)
         else:
             converted_value = round((value * 0.4535924), 1)
-        await self.coordinator.client.update_pet_settings(self.pet_data, PetSetting.WEIGHT, converted_value)
+        await self.coordinator.client.update_pet_settings(
+            self.pet_data, PetSetting.WEIGHT, converted_value
+        )
         await self.coordinator.async_request_refresh()
 
 
@@ -221,17 +220,17 @@ class Surplus(CoordinatorEntity, NumberEntity):
 
         return {
             "identifiers": {(DOMAIN, self.feeder_data.id)},
-            "name": self.feeder_data.data['name'],
+            "name": self.feeder_data.data["name"],
             "manufacturer": "PetKit",
             "model": FEEDERS[self.feeder_data.type],
-            "sw_version": f'{self.feeder_data.data["firmware"]}'
+            "sw_version": f'{self.feeder_data.data["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.feeder_data.id) + '_surplus'
+        return str(self.feeder_data.id) + "_surplus"
 
     @property
     def has_entity_name(self) -> bool:
@@ -249,7 +248,7 @@ class Surplus(CoordinatorEntity, NumberEntity):
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:food-drumstick'
+        return "mdi:food-drumstick"
 
     @property
     def entity_category(self) -> EntityCategory:
@@ -261,7 +260,7 @@ class Surplus(CoordinatorEntity, NumberEntity):
     def native_value(self) -> int:
         """Returns current surplus setting."""
 
-        return self.feeder_data.data['settings']['surplus']
+        return self.feeder_data.data["settings"]["surplus"]
 
     @property
     def native_unit_of_measurement(self) -> UnitOfMass:
@@ -303,7 +302,7 @@ class Surplus(CoordinatorEntity, NumberEntity):
     def available(self) -> bool:
         """Only make available if device is online."""
 
-        if self.feeder_data.data['state']['pim'] != 0:
+        if self.feeder_data.data["state"]["pim"] != 0:
             return True
         else:
             return False
@@ -311,8 +310,10 @@ class Surplus(CoordinatorEntity, NumberEntity):
     async def async_set_native_value(self, value: int) -> None:
         """Update the current value."""
 
-        await self.coordinator.client.update_feeder_settings(self.feeder_data, FeederSetting.SURPLUS, int(value))
-        self.feeder_data.data['settings']['surplus'] = value
+        await self.coordinator.client.update_feeder_settings(
+            self.feeder_data, FeederSetting.SURPLUS, int(value)
+        )
+        self.feeder_data.data["settings"]["surplus"] = value
         self.async_write_ha_state()
         await self.coordinator.async_request_refresh()
 
@@ -336,17 +337,17 @@ class Volume(CoordinatorEntity, NumberEntity):
 
         return {
             "identifiers": {(DOMAIN, self.feeder_data.id)},
-            "name": self.feeder_data.data['name'],
+            "name": self.feeder_data.data["name"],
             "manufacturer": "PetKit",
             "model": FEEDERS[self.feeder_data.type],
-            "sw_version": f'{self.feeder_data.data["firmware"]}'
+            "sw_version": f'{self.feeder_data.data["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.feeder_data.id) + '_volume'
+        return str(self.feeder_data.id) + "_volume"
 
     @property
     def has_entity_name(self) -> bool:
@@ -364,7 +365,7 @@ class Volume(CoordinatorEntity, NumberEntity):
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:volume-high'
+        return "mdi:volume-high"
 
     @property
     def entity_category(self) -> EntityCategory:
@@ -376,7 +377,7 @@ class Volume(CoordinatorEntity, NumberEntity):
     def native_value(self) -> int:
         """Returns current volume setting."""
 
-        return self.feeder_data.data['settings']['volume']
+        return self.feeder_data.data["settings"]["volume"]
 
     @property
     def mode(self) -> NumberMode:
@@ -406,7 +407,7 @@ class Volume(CoordinatorEntity, NumberEntity):
     def available(self) -> bool:
         """Only make available if device is online."""
 
-        if self.feeder_data.data['state']['pim'] != 0:
+        if self.feeder_data.data["state"]["pim"] != 0:
             return True
         else:
             return False
@@ -414,8 +415,10 @@ class Volume(CoordinatorEntity, NumberEntity):
     async def async_set_native_value(self, value: int) -> None:
         """Update the current value."""
 
-        await self.coordinator.client.update_feeder_settings(self.feeder_data, FeederSetting.VOLUME, int(value))
-        self.feeder_data.data['settings']['volume'] = value
+        await self.coordinator.client.update_feeder_settings(
+            self.feeder_data, FeederSetting.VOLUME, int(value)
+        )
+        self.feeder_data.data["settings"]["volume"] = value
         self.async_write_ha_state()
         await self.coordinator.async_request_refresh()
 
@@ -439,17 +442,17 @@ class ManualFeed(CoordinatorEntity, NumberEntity):
 
         return {
             "identifiers": {(DOMAIN, self.feeder_data.id)},
-            "name": self.feeder_data.data['name'],
+            "name": self.feeder_data.data["name"],
             "manufacturer": "PetKit",
             "model": FEEDERS[self.feeder_data.type],
-            "sw_version": f'{self.feeder_data.data["firmware"]}'
+            "sw_version": f'{self.feeder_data.data["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.feeder_data.id) + '_manual_feed'
+        return str(self.feeder_data.id) + "_manual_feed"
 
     @property
     def has_entity_name(self) -> bool:
@@ -467,7 +470,7 @@ class ManualFeed(CoordinatorEntity, NumberEntity):
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:bowl-mix'
+        return "mdi:bowl-mix"
 
     @property
     def native_value(self) -> int:
@@ -515,7 +518,7 @@ class ManualFeed(CoordinatorEntity, NumberEntity):
     def available(self) -> bool:
         """Only make available if device is online."""
 
-        if self.feeder_data.data['state']['pim'] != 0:
+        if self.feeder_data.data["state"]["pim"] != 0:
             return True
         else:
             return False
@@ -524,7 +527,9 @@ class ManualFeed(CoordinatorEntity, NumberEntity):
         """Update the current value."""
 
         if (value < 5) or (value > 200):
-            raise PetKitError(f'{self.feeder_data.data["name"]} can only accept manual feeding amounts between 5 to 200 grams')
+            raise PetKitError(
+                f'{self.feeder_data.data["name"]} can only accept manual feeding amounts between 5 to 200 grams'
+            )
         else:
             await self.coordinator.client.manual_feeding(self.feeder_data, int(value))
             await self.coordinator.async_request_refresh()
@@ -549,17 +554,17 @@ class LBCleaningDelay(CoordinatorEntity, NumberEntity):
 
         return {
             "identifiers": {(DOMAIN, self.lb_data.id)},
-            "name": self.lb_data.device_detail['name'],
+            "name": self.lb_data.device_detail["name"],
             "manufacturer": "PetKit",
             "model": LITTER_BOXES[self.lb_data.type],
-            "sw_version": f'{self.lb_data.device_detail["firmware"]}'
+            "sw_version": f'{self.lb_data.device_detail["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.lb_data.id) + '_cleaning_delay'
+        return str(self.lb_data.id) + "_cleaning_delay"
 
     @property
     def has_entity_name(self) -> bool:
@@ -577,7 +582,7 @@ class LBCleaningDelay(CoordinatorEntity, NumberEntity):
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:motion-pause'
+        return "mdi:motion-pause"
 
     @property
     def entity_category(self) -> EntityCategory:
@@ -589,7 +594,7 @@ class LBCleaningDelay(CoordinatorEntity, NumberEntity):
     def native_value(self) -> int:
         """Returns currently set delay in minutes."""
 
-        return (self.lb_data.device_detail['settings']['stillTime'] / 60)
+        return self.lb_data.device_detail["settings"]["stillTime"] / 60
 
     @property
     def native_unit_of_measurement(self) -> UnitOfTime:
@@ -625,12 +630,12 @@ class LBCleaningDelay(CoordinatorEntity, NumberEntity):
     def available(self) -> bool:
         """Only make available if device is online."""
 
-        kitten_mode_off = self.lb_data.device_detail['settings']['kitten'] == 0
-        auto_clean = self.lb_data.device_detail['settings']['autoWork'] == 1
+        kitten_mode_off = self.lb_data.device_detail["settings"]["kitten"] == 0
+        auto_clean = self.lb_data.device_detail["settings"]["autoWork"] == 1
 
-        if self.lb_data.device_detail['state']['pim'] != 0:
+        if self.lb_data.device_detail["state"]["pim"] != 0:
             # Only available if kitten mode off and auto cleaning on
-            if (kitten_mode_off and auto_clean):
+            if kitten_mode_off and auto_clean:
                 return True
             else:
                 return False
@@ -641,8 +646,10 @@ class LBCleaningDelay(CoordinatorEntity, NumberEntity):
         """Update the current value."""
 
         seconds = int(value * 60)
-        await self.coordinator.client.update_litter_box_settings(self.lb_data, LitterBoxSetting.DELAY_CLEAN_TIME, seconds)
-        self.lb_data.device_detail['settings']['stillTime'] = seconds
+        await self.coordinator.client.update_litter_box_settings(
+            self.lb_data, LitterBoxSetting.DELAY_CLEAN_TIME, seconds
+        )
+        self.lb_data.device_detail["settings"]["stillTime"] = seconds
         self.async_write_ha_state()
         await self.coordinator.async_request_refresh()
 
@@ -666,17 +673,17 @@ class MinEatingDuration(CoordinatorEntity, NumberEntity):
 
         return {
             "identifiers": {(DOMAIN, self.feeder_data.id)},
-            "name": self.feeder_data.data['name'],
+            "name": self.feeder_data.data["name"],
             "manufacturer": "PetKit",
             "model": FEEDERS[self.feeder_data.type],
-            "sw_version": f'{self.feeder_data.data["firmware"]}'
+            "sw_version": f'{self.feeder_data.data["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.feeder_data.id) + '_min_eating_duration'
+        return str(self.feeder_data.id) + "_min_eating_duration"
 
     @property
     def has_entity_name(self) -> bool:
@@ -694,7 +701,7 @@ class MinEatingDuration(CoordinatorEntity, NumberEntity):
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:clock-digital'
+        return "mdi:clock-digital"
 
     @property
     def entity_category(self) -> EntityCategory:
@@ -706,7 +713,7 @@ class MinEatingDuration(CoordinatorEntity, NumberEntity):
     def native_value(self) -> int:
         """Returns current timer setting."""
 
-        return self.feeder_data.data['settings']['shortest']
+        return self.feeder_data.data["settings"]["shortest"]
 
     @property
     def native_unit_of_measurement(self) -> UnitOfMass:
@@ -742,7 +749,7 @@ class MinEatingDuration(CoordinatorEntity, NumberEntity):
     def available(self) -> bool:
         """Only make available if device is online."""
 
-        if self.feeder_data.data['state']['pim'] != 0:
+        if self.feeder_data.data["state"]["pim"] != 0:
             return True
         else:
             return False
@@ -750,8 +757,10 @@ class MinEatingDuration(CoordinatorEntity, NumberEntity):
     async def async_set_native_value(self, value: int) -> None:
         """Update the current value."""
 
-        await self.coordinator.client.update_feeder_settings(self.feeder_data, FeederSetting.MIN_EAT_DURATION, int(value))
-        self.feeder_data.data['settings']['shortest'] = value
+        await self.coordinator.client.update_feeder_settings(
+            self.feeder_data, FeederSetting.MIN_EAT_DURATION, int(value)
+        )
+        self.feeder_data.data["settings"]["shortest"] = value
         self.async_write_ha_state()
         await self.coordinator.async_request_refresh()
 
@@ -775,17 +784,17 @@ class FreshElementManualFeed(CoordinatorEntity, NumberEntity):
 
         return {
             "identifiers": {(DOMAIN, self.feeder_data.id)},
-            "name": self.feeder_data.data['name'],
+            "name": self.feeder_data.data["name"],
             "manufacturer": "PetKit",
             "model": FEEDERS[self.feeder_data.type],
-            "sw_version": f'{self.feeder_data.data["firmware"]}'
+            "sw_version": f'{self.feeder_data.data["firmware"]}',
         }
 
     @property
     def unique_id(self) -> str:
         """Sets unique ID for this entity."""
 
-        return str(self.feeder_data.id) + '_manual_feed'
+        return str(self.feeder_data.id) + "_manual_feed"
 
     @property
     def has_entity_name(self) -> bool:
@@ -803,7 +812,7 @@ class FreshElementManualFeed(CoordinatorEntity, NumberEntity):
     def icon(self) -> str:
         """Set icon."""
 
-        return 'mdi:bowl-mix'
+        return "mdi:bowl-mix"
 
     @property
     def native_value(self) -> int:
@@ -851,7 +860,7 @@ class FreshElementManualFeed(CoordinatorEntity, NumberEntity):
     def available(self) -> bool:
         """Only make available if device is online."""
 
-        if self.feeder_data.data['state']['pim'] != 0:
+        if self.feeder_data.data["state"]["pim"] != 0:
             return True
         else:
             return False
@@ -860,7 +869,9 @@ class FreshElementManualFeed(CoordinatorEntity, NumberEntity):
         """Update the current value."""
 
         if (value < 20) or (value > 400):
-            raise PetKitError(f'{self.feeder_data.data["name"]} can only accept manual feeding amounts between 20 to 400 grams')
+            raise PetKitError(
+                f'{self.feeder_data.data["name"]} can only accept manual feeding amounts between 20 to 400 grams'
+            )
         else:
             await self.coordinator.client.manual_feeding(self.feeder_data, int(value))
             await self.coordinator.async_request_refresh()

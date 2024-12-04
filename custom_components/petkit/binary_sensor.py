@@ -34,7 +34,7 @@ async def async_setup_entry(
     for feeder_id, feeder_data in coordinator.data.feeders.items():
 
         #All feeders except D4s
-        if feeder_data.type not in ['d4s', 'd4h', 'd4sh']:
+        if feeder_data.type not in ['d4s', 'd4sh']:
             binary_sensors.append(
                 FoodLevel(coordinator, feeder_id)
             )
@@ -52,15 +52,19 @@ async def async_setup_entry(
                 FoodLevelHopper2(coordinator, feeder_id)
                 ))
 
-        # D4sh Feeder
+        # D4h, D4sh Feeder
         if feeder_data.type in ['d4h', 'd4sh']:
             binary_sensors.extend(
                 (
                     CameraStatus(coordinator, feeder_id),
-                    Eating(coordinator, feeder_id),
                     Feeding(coordinator, feeder_id),
                     CarePlusSubscription(coordinator, feeder_id)
                 )
+            )
+
+        if feeder_data.type == 'd4sh':
+            binary_sensors.append(
+                Eating(coordinator, feeder_id)
             )
 
         # D3 Feeder
@@ -215,13 +219,13 @@ class FoodLevel(CoordinatorEntity, BinarySensorEntity):
     def is_on(self) -> bool:
         """Return True if food needs to be added."""
 
-        if self.feeder_data.type == 'd3':
+        if self.feeder_data.type in ['d3', 'd4h']:
             if self.feeder_data.data['state']['food'] < 2:
                 return True
             else:
                 return False
 
-        if self.feeder_data.type != 'd3':
+        if self.feeder_data.type not in ['d3', 'd4h']:
             # The food key for the Fresh Element represents grams left
             if self.feeder_data.data['state']['food'] == 0:
                 return True
@@ -232,13 +236,13 @@ class FoodLevel(CoordinatorEntity, BinarySensorEntity):
     def icon(self) -> str:
         """Set icon."""
 
-        if self.feeder_data.type == 'd3':
+        if self.feeder_data.type in ['d3', 'd4h']:
             if self.feeder_data.data['state']['food'] < 2:
                 return 'mdi:food-drumstick-off'
             else:
                 return 'mdi:food-drumstick'
 
-        if self.feeder_data.type != 'd3':
+        if self.feeder_data.type not in ['d3', 'd4h']:
             if self.feeder_data.data['state']['food'] == 0:
                 return 'mdi:food-drumstick-off'
             else:
